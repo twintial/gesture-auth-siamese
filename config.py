@@ -6,7 +6,11 @@ STD_THRESHOLD = 0.022  # 相位标准差阈值
 N_CHANNELS = 7  # 声道数
 F0 = 17000.0
 
-phase_input_shape = (None, 56, 777, 1)
+PADDING_LEN = 1400
+
+data_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN)
+
+phase_input_shape = (None, NUM_OF_FREQ * N_CHANNELS, PADDING_LEN, 1)
 
 # train
 TRAINING_AUDIO_DIRS = [

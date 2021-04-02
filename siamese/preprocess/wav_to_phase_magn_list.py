@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from scipy.signal import butter, filtfilt
+import matplotlib.pyplot as plt
 
 from config import *
 
@@ -46,26 +47,56 @@ def get_magnitude(I: np.ndarray, Q: np.ndarray) -> np.ndarray:
     return magn
 
 
+def padding_or_clip(array: np.ndarray, target_len):
+    array_len = array.shape[1]
+    delta_len = array_len - target_len
+    if delta_len > 0:
+        left_clip_len = abs(delta_len) // 2
+        right_clip_len = abs(delta_len) - left_clip_len
+        return array[:, left_clip_len:-right_clip_len]
+    elif delta_len < 0:
+        left_zero_padding_len = abs(delta_len) // 2
+        right_zero_padding_len = abs(delta_len) - left_zero_padding_len
+        return np.pad(array, ((0, 0), (left_zero_padding_len, right_zero_padding_len)))
+
 # main function
 def convert_wavfile_to_phase_and_magnitude(filename):
+    I_Q_skip = 1000
     audio_binary = tf.io.read_file(filename)
     data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-1，1
     data = data.numpy().T[:-1, int(fs * DELAY_TIME):]
     # 开始处理数据
-    unwrapped_phase_list = []
-    magnitude_list = []
+    unwrapped_phase_diff_list = []
+    magnitude_diff_list = []
     for i in range(NUM_OF_FREQ):
         fc = F0 + i * STEP
         data_filter = butter_bandpass_filter(data, fc - 150.0, fc + 150.0)
         I_raw, Q_raw = get_cos_IQ_raw(data_filter, fc, fs)
         # 滤波+下采样
-        I = move_average_overlap_filter(I_raw)
-        Q = move_average_overlap_filter(Q_raw)
+        I = move_average_overlap_filter(I_raw[:, I_Q_skip:-I_Q_skip])
+        Q = move_average_overlap_filter(Q_raw[:, I_Q_skip:-I_Q_skip])
 
         # 暂时不做平滑
 
         unwrapped_phase = get_phase(I, Q)
-        unwrapped_phase_list.append(unwrapped_phase)
+        unwrapped_phase_diff = np.diff(unwrapped_phase)
         magnitude = get_magnitude(I, Q)
-        magnitude_list.append(magnitude)
-    return np.array(unwrapped_phase_list), np.array(magnitude_list)
+        magnitude_diff = np.diff(magnitude)
+        # padding
+        unwrapped_phase_diff_padded = padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
+        magnitude_diff_padded = padding_or_clip(magnitude_diff, PADDING_LEN)
+
+        # plt.figure()
+        # plt.plot(unwrapped_phase_diff[0])
+        # plt.figure()
+        # plt.plot(unwrapped_phase_diff_padded[0])
+        # plt.figure()
+        # plt.plot(magnitude_diff[0])
+        # plt.figure()
+        # plt.plot(magnitude_diff_padded[0])
+        # plt.show()
+
+        unwrapped_phase_diff_list.append(unwrapped_phase_diff_padded)
+        magnitude_diff_list.append(magnitude_diff_padded)
+
+    return np.array(unwrapped_phase_diff_list).reshape(data_shape), np.array(magnitude_diff_list).reshape(data_shape)

@@ -2,7 +2,7 @@ import os
 import re
 from siamese.preprocess.wav_to_phase_magn_list import convert_wavfile_to_phase_and_magnitude
 import numpy as np
-
+import log
 
 def convert(raw_audio_dir, target_npz_dir):
     user_dirs = os.listdir(raw_audio_dir)
@@ -17,13 +17,15 @@ def convert(raw_audio_dir, target_npz_dir):
                 m = re.match(r'(\d*)\.wav', audio_file)
                 if m:
                     abs_audio_file = os.path.join(abs_gesture_dir, audio_file)
-                    phase_list, magn_list = convert_wavfile_to_phase_and_magnitude(abs_audio_file)
+                    phase_diff, magn_diff = convert_wavfile_to_phase_and_magnitude(abs_audio_file)
                     save_file = os.path.join(save_dir, m.group(1))
                     np.savez_compressed(save_file,
-                                        phase_list=phase_list,
-                                        magn_list=magn_list)
+                                        phase_diff=phase_diff,
+                                        magn_diff=magn_diff)
                 else:
                     raise IOError('not a wav file')
+        log.logger.info(f'convert {user_dir} completely!')
+
 
 
 if __name__ == '__main__':
