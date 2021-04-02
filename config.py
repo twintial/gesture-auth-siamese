@@ -6,6 +6,8 @@ STD_THRESHOLD = 0.022  # 相位标准差阈值
 N_CHANNELS = 7  # 声道数
 F0 = 17000.0
 
+phase_input_shape = (None, 56, 777, 1)
+
 # train
 TRAINING_AUDIO_DIRS = [
     # r'D:\projects\pyprojects\soundphase\gest\sjj\gesture1',

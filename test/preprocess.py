@@ -46,7 +46,6 @@ def get_magnitude(I: np.ndarray, Q: np.ndarray) -> np.ndarray:
 def tensor_feature(tensor):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[tf.io.serialize_tensor(tensor).numpy()]))
 def create_example(filename):
-    global do
     audio_binary = tf.io.read_file(filename)
     data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-1，1
     data = data.numpy().T[:-1, int(fs * DELAY_TIME):]
@@ -102,10 +101,14 @@ def parse_example(example_proto):
     return parsed_example
 def get_data_from_tfrecord():
     train_dataset = tf.data.TFRecordDataset([r'dataset/test.tfrecord'])
-    train_dataset = train_dataset.map(parse_example).batch(32).prefetch(1)
+    train_dataset = train_dataset.map(parse_example)
+    train_dataset.as_numpy_iterator()
+    train_dataset.enumerate()
+    for d in train_dataset:
+        print(d)
 
 
 
 if __name__ == '__main__':
-    generate_tfrecord()
+    # generate_tfrecord()
     get_data_from_tfrecord()
