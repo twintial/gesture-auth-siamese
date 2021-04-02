@@ -68,4 +68,4 @@ def convert_wavfile_to_phase_and_magnitude(filename):
         unwrapped_phase_list.append(unwrapped_phase)
         magnitude = get_magnitude(I, Q)
         magnitude_list.append(magnitude)
-    return unwrapped_phase_list, magnitude_list
+    return np.array(unwrapped_phase_list), np.array(magnitude_list)
