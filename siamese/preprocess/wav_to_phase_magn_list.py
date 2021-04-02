@@ -1,9 +1,9 @@
-import numpy as np
-import tensorflow as tf
-from scipy.signal import butter, filtfilt
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.signal import butter, filtfilt
 
 from config import *
+from siamese.preprocess.util import load_audio_data
 
 
 def butter_bandpass_filter(data, lowcut, highcut, fs=48e3, order=5):
@@ -62,9 +62,12 @@ def padding_or_clip(array: np.ndarray, target_len):
 # main function
 def convert_wavfile_to_phase_and_magnitude(filename):
     I_Q_skip = 1000
-    audio_binary = tf.io.read_file(filename)
-    data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-1，1
-    data = data.numpy().T[:-1, int(fs * DELAY_TIME):]
+    # # 这个可能耗时有点长
+    # audio_binary = tf.io.read_file(filename)
+    # data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-1，1
+    # data = data.numpy().T[:-1, int(fs * DELAY_TIME):]
+    data, fs = load_audio_data(filename, 'wav')
+    data = data.T[:-1, int(fs * DELAY_TIME):]
     # 开始处理数据
     unwrapped_phase_diff_list = []
     magnitude_diff_list = []

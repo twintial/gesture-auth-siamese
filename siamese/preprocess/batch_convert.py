@@ -4,6 +4,7 @@ from siamese.preprocess.wav_to_phase_magn_list import convert_wavfile_to_phase_a
 import numpy as np
 import log
 
+
 def convert(raw_audio_dir, target_npz_dir):
     user_dirs = os.listdir(raw_audio_dir)
     for user_dir in user_dirs:
@@ -12,7 +13,7 @@ def convert(raw_audio_dir, target_npz_dir):
             abs_gesture_dir = os.path.join(raw_audio_dir, user_dir, gesture_dir)
             audio_files = os.listdir(abs_gesture_dir)
             save_dir = os.path.join(target_npz_dir, user_dir, gesture_dir)
-            os.makedirs(save_dir, exist_ok=True)
+            os.makedirs(save_dir, exist_ok=False)
             for audio_file in audio_files:
                 m = re.match(r'(\d*)\.wav', audio_file)
                 if m:
@@ -23,10 +24,12 @@ def convert(raw_audio_dir, target_npz_dir):
                                         phase_diff=phase_diff,
                                         magn_diff=magn_diff)
                 else:
-                    raise IOError('not a wav file')
-        log.logger.info(f'convert {user_dir} completely!')
-
+                    raise IOError(f'{audio_file} in {os.path.join(raw_audio_dir, user_dir)} is not a wav file')
+        log.logger.info(f'convert wav files in {os.path.join(raw_audio_dir, user_dir)} completely!')
 
 
 if __name__ == '__main__':
+    # train
     convert(r'D:\实验数据\2021\siamese\train', r'D:\实验数据\2021\siamese\train_npz')
+    # test
+    convert(r'D:\实验数据\2021\siamese\test', r'D:\实验数据\2021\siamese\test_npz')
