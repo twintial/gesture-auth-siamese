@@ -1,6 +1,8 @@
 import os
+
 import numpy as np
 import tensorflow as tf
+
 import log
 
 
@@ -27,9 +29,13 @@ class PhasePairConvertor:
         labels = np.arange(len(dir_list))
         self.path_label_tuples = list(zip(dir_list, labels))
 
-    def create_pairs(self, npz_path, target_path):
+    def create_pairs(self, npz_path, target_path, tfrecord_file_name):
         self._create_path_label_tuples(npz_path)
-        with tf.io.TFRecordWriter(target_path) as f:
+        log.logger.info('=' * 10 + ' start to generate tfrecord ' + '=' * 10)
+        positive_pair_num = 0
+        negative_pair_num = 0
+        os.makedirs(target_path)
+        with tf.io.TFRecordWriter(os.path.join(target_path, tfrecord_file_name)) as f:
             tuple_num = len(self.path_label_tuples)
             for tuple_index in range(tuple_num):
                 path_label_tuple = self.path_label_tuples[tuple_index]
@@ -56,6 +62,7 @@ class PhasePairConvertor:
                                 }
                             ))
                         f.write(tf_example.SerializeToString())
+                        positive_pair_num += 1
                     # create nagetive pairs
                     for fake_tuple_index in range(tuple_index + 1, tuple_num):
                         fake_path_label_tuple = self.path_label_tuples[fake_tuple_index]
@@ -75,10 +82,21 @@ class PhasePairConvertor:
                                     }
                                 ))
                             f.write(tf_example.SerializeToString())
-                log.logger.info(f'finish {path_label_tuple[0]}')
+                            negative_pair_num += 1
+                log.logger.debug(f'finish all npzs in path {path_label_tuple[0]}')
+        # 写入样本信息
+        with open(os.path.join(target_path, 'description.txt')) as f:
+            f.write(f'positive pairs: {positive_pair_num}\n')
+            f.write(f'negative pairs: {negative_pair_num}\n')
+            f.write(f'total pairs: {positive_pair_num + negative_pair_num}\n')
+        log_msg = f'finish all paths in path {npz_path} ' \
+            f'with {positive_pair_num} positive pairs and {negative_pair_num} negative pairs, ' \
+            f'totally {positive_pair_num + negative_pair_num} paris'
+        log.logger.info(log_msg)
 
 
 if __name__ == '__main__':
     convertor = PhasePairConvertor()
-    convertor.create_pairs(r'D:\实验数据\2021\siamese\train_npz', r'D:\实验数据\2021\siamese\train_tfrecord\train.tfrecord')
-    convertor.create_pairs(r'D:\实验数据\2021\siamese\test_npz', r'D:\实验数据\2021\siamese\test_tfrecord\test.tfrecord')
+    # 要手动新建train_tfrecord和test_tfrecord
+    convertor.create_pairs(r'D:\实验数据\2021\siamese\train_npz', r'D:\实验数据\2021\siamese\train_tfrecord', 'train.tfrecord')
+    convertor.create_pairs(r'D:\实验数据\2021\siamese\test_npz', r'D:\实验数据\2021\siamese\test_tfrecord', 'test.tfrecord')

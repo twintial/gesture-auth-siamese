@@ -58,6 +58,7 @@ def padding_or_clip(array: np.ndarray, target_len):
         right_zero_padding_len = abs(delta_len) - left_zero_padding_len
         return np.pad(array, ((0, 0), (left_zero_padding_len, right_zero_padding_len)))
 
+
 # main function
 def convert_wavfile_to_phase_and_magnitude(filename):
     I_Q_skip = 1000

@@ -21,6 +21,7 @@ def main():
     test_set = dataset_loader.get_test_set()
     siamese_net.train_with_datasets(train_set, test_set, epochs=1000)
 
+
 if __name__ == '__main__':
-    # 没有归一化和shuffle
+    # 没有归一化
     main()

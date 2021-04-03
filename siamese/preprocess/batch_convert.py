@@ -1,8 +1,8 @@
 import os
 import re
-from siamese.preprocess import convert_wavfile_to_phase_and_magnitude
 import numpy as np
 import log
+from siamese.preprocess.wav_to_phase_magn_list import convert_wavfile_to_phase_and_magnitude
 
 
 def convert(raw_audio_dir, target_npz_dir):
@@ -25,7 +25,7 @@ def convert(raw_audio_dir, target_npz_dir):
                                         magn_diff=magn_diff)
                 else:
                     raise IOError(f'{audio_file} in {os.path.join(raw_audio_dir, user_dir)} is not a wav file')
-        log.logger.info(f'convert wav files in {os.path.join(raw_audio_dir, user_dir)} completely!')
+        log.logger.debug(f'convert wav files in {os.path.join(raw_audio_dir, user_dir)} completely!')
 
 
 if __name__ == '__main__':
