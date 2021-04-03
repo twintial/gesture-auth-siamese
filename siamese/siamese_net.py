@@ -37,22 +37,26 @@ def compute_accuracy(y_true, y_pred):  # numpy上的操作
 
 
 class SiameseNet:
-    def __init__(self, base_net, trained_weight_path=None):
+    def __init__(self, base_net: tf.keras.Model, trained_weight_path=None):
         self.base_net = base_net
         self.trained_weight_path = trained_weight_path
         self.training_history = None
 
-        self.distant = layers.Lambda(euclidean_distance)
+        self.distant = layers.Lambda(euclidean_distance, name='euclidean_distance')
         self.input_shape = [phase_input_shape, phase_input_shape]
         self.model = self._construct_siamese_architecture(self.input_shape)
         self._compile_siamese_model()
 
-    def _construct_siamese_architecture(self, inputs):
-        input_a, input_b = inputs
+    def _construct_siamese_architecture(self, inputs_shape):
+        input_shape_a, input_shape_b = inputs_shape
+        input_a = layers.Input(shape=input_shape_a)
+        input_b = layers.Input(shape=input_shape_b)
+
         processed_a = self.base_net(input_a)
         processed_b = self.base_net(input_b)
+
         distant_output = self.distant([processed_a, processed_b])
-        model = Model(inputs=[processed_a, processed_b], outputs=distant_output)
+        model = Model(inputs=[input_a, input_b], outputs=distant_output)
         return model
 
     def _compile_siamese_model(self):
@@ -65,21 +69,21 @@ class SiameseNet:
                                                batch_size=batch_size, epochs=epochs, verbose=verbose,
                                                validation_data=([te_pairs[:, 0], te_pairs[:, 1]], te_y))
 
-        # compute final accuracy on training and test sets
+        # compute final accuracy on training and test_demo sets
         y_pred = self.model.predict([tr_pairs[:, 0], tr_pairs[:, 1]])
         tr_acc = compute_accuracy(tr_y, y_pred)
         y_pred = self.model.predict([te_pairs[:, 0], te_pairs[:, 1]])
         te_acc = compute_accuracy(te_y, y_pred)
 
         print('* Accuracy on training set: %0.2f%%' % (100 * tr_acc))
-        print('* Accuracy on test set: %0.2f%%' % (100 * te_acc))
+        print('* Accuracy on test_demo set: %0.2f%%' % (100 * te_acc))
 
     def train_with_datasets(self, train_set, test_set, epochs=1000, verbose=2):
         self.training_history = self.model.fit(train_set,
                                                epochs=epochs, verbose=verbose,
                                                validation_data=test_set)
 
-        # compute final accuracy on training and test sets
+        # compute final accuracy on training and test_demo sets
         self.model.evaluate(train_set)
         self.model.evaluate(test_set)
 

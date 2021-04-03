@@ -1,6 +1,6 @@
 import os
 import re
-from siamese.preprocess.wav_to_phase_magn_list import convert_wavfile_to_phase_and_magnitude
+from siamese.preprocess import convert_wavfile_to_phase_and_magnitude
 import numpy as np
 import log
 
@@ -31,5 +31,5 @@ def convert(raw_audio_dir, target_npz_dir):
 if __name__ == '__main__':
     # train
     convert(r'D:\实验数据\2021\siamese\train', r'D:\实验数据\2021\siamese\train_npz')
-    # test
+    # test_demo
     convert(r'D:\实验数据\2021\siamese\test', r'D:\实验数据\2021\siamese\test_npz')

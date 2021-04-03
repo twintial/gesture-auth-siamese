@@ -10,7 +10,7 @@ PADDING_LEN = 1400
 
 data_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN)
 
-phase_input_shape = (None, NUM_OF_FREQ * N_CHANNELS, PADDING_LEN, 1)
+phase_input_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN, 1)
 
 # train
 TRAINING_AUDIO_DIRS = [

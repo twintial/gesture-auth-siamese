@@ -47,7 +47,7 @@ def tensor_feature(tensor):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[tf.io.serialize_tensor(tensor).numpy()]))
 def create_example(filename):
     audio_binary = tf.io.read_file(filename)
-    data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-1，1
+    data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-t，t
     data = data.numpy().T[:-1, int(fs * DELAY_TIME):]
     # 开始处理数据
     unwrapped_phase_list = []
@@ -76,7 +76,7 @@ def create_example(filename):
         ))
     return tf_example
 def generate_tfrecord():
-    with tf.io.TFRecordWriter(r'../dataset/test.tfrecord') as f:
+    with tf.io.TFRecordWriter(r'../dataset/test_demo.tfrecord') as f:
         for dir in TRAINING_AUDIO_DIRS:
             filenames = os.listdir(dir)
             for filename in filenames:
@@ -100,7 +100,7 @@ def parse_example(example_proto):
     parsed_example['magnitude_list'] = tf.io.parse_tensor(parsed_example['magnitude_list'].values[0], tf.float32)
     return parsed_example
 def get_data_from_tfrecord():
-    train_dataset = tf.data.TFRecordDataset([r'../dataset/test.tfrecord'])
+    train_dataset = tf.data.TFRecordDataset([r'../dataset/test_demo.tfrecord'])
     train_dataset = train_dataset.map(parse_example)
     # train_dataset.as_numpy_iterator()
     # train_dataset.enumerate()

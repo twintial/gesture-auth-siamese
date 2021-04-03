@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import butter, filtfilt
 
@@ -64,8 +63,8 @@ def convert_wavfile_to_phase_and_magnitude(filename):
     I_Q_skip = 1000
     # # 这个可能耗时有点长
     # audio_binary = tf.io.read_file(filename)
-    # data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-1，1
-    # data = data.numpy().T[:-1, int(fs * DELAY_TIME):]
+    # data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-t，t
+    # data = data.numpy().T[:-t, int(fs * DELAY_TIME):]
     data, fs = load_audio_data(filename, 'wav')
     data = data.T[:-1, int(fs * DELAY_TIME):]
     # 开始处理数据
