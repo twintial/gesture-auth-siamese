@@ -1,9 +1,11 @@
 import tensorflow as tf
 import numpy as np
+import time
 from tensorflow.keras import Model, layers, optimizers
 from tensorflow.keras import backend as K
 
 from config import phase_input_shape
+from train_log_formatter import print_log
 
 
 def euclidean_distance(vects):
@@ -42,6 +44,11 @@ class SiameseNet:
         self.trained_weight_path = trained_weight_path
         self.training_history = None
 
+        self.train_losses = []
+        self.train_accuracies = []
+        self.val_losses = []
+        self.val_accuracies = []
+
         self.distant = layers.Lambda(euclidean_distance, name='euclidean_distance')
         self.input_shape = [phase_input_shape, phase_input_shape]
         self.model = self._construct_siamese_architecture(self.input_shape)
@@ -78,15 +85,44 @@ class SiameseNet:
         print('* Accuracy on training set: %0.2f%%' % (100 * tr_acc))
         print('* Accuracy on test_demo set: %0.2f%%' % (100 * te_acc))
 
-    def train_with_datasets(self, train_set, test_set, epochs=1000, verbose=2):
-        self.training_history = self.model.fit(train_set,
-                                               epochs=epochs, verbose=verbose,
-                                               validation_data=test_set)
+    def train_with_datasets(self, train_set, test_set, epochs=1000):
+        # 速度略慢
+        self.train_losses.clear()
+        self.train_accuracies.clear()
+        self.val_losses.clear()
+        self.val_accuracies.clear()
 
-        # compute final accuracy on training and test_demo sets
-        self.model.evaluate(train_set)
-        self.model.evaluate(test_set)
+        # Stop criteria variables
+        best_validation_accuracy = 0.0
+        best_accuracy_iteration = 0
+        for i in range(epochs):
+            print(f'Epoch {i + 1}/{epochs}')
+
+            train_losses_on_epoch = []
+            train_acc_on_epoch = []
+            val_losses_on_epoch = []
+            val_acc_on_epoch = []
+            # 每个epoch训练所有数据
+            start_time = time.time()
+            for X, Y in train_set:
+                loss, acc = self.model.train_on_batch([X[:, 0], X[:, 1]], Y)
+                train_losses_on_epoch.append(loss)
+                train_acc_on_epoch.append(acc)
+            train_loss = np.mean(train_losses_on_epoch)
+            train_acc = np.mean(train_acc_on_epoch)
+            for te_X, te_Y in test_set:
+                loss, acc = self.model.evaluate([te_X[:, 0], te_X[:, 1]], te_Y, verbose=0)
+                val_losses_on_epoch.append(loss)
+                val_acc_on_epoch.append(acc)
+            val_loss = np.mean(val_losses_on_epoch)
+            val_acc = np.mean(val_acc_on_epoch)
+            end_time = time.time()
+            print_log(end_time - start_time, train_loss, train_acc, val_loss, val_acc)
+
+            self.train_losses.append(train_loss)
+            self.train_accuracies.append(train_acc)
+            self.val_losses.append(val_loss)
+            self.val_accuracies.append(val_acc)
 
     def save_weights(self, weights_path):
         self.model.save_weights(weights_path)
-

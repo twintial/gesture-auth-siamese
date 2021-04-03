@@ -8,9 +8,10 @@ F0 = 17000.0
 
 PADDING_LEN = 1400
 
+# net config
 data_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN)
-
 phase_input_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN, 1)
+BATCH_SIZE = 32
 
 # train
 TRAINING_AUDIO_DIRS = [
