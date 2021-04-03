@@ -1,10 +1,10 @@
+from config import phase_input_shape
 import tensorflow as tf
 import numpy as np
 import time
 from tensorflow.keras import Model, layers, optimizers
 from tensorflow.keras import backend as K
 
-from config import phase_input_shape
 from train_log_formatter import print_log
 
 

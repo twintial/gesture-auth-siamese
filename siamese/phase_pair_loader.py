@@ -1,5 +1,5 @@
-import tensorflow as tf
 from config import *
+import tensorflow as tf
 
 
 class PhasePairLoader:
@@ -24,13 +24,13 @@ class PhasePairLoader:
 
     def _load_train_set(self):
         train_set = tf.data.TFRecordDataset(self.train_set_files)
-        train_set = train_set.map(self._parse_example, num_parallel_calls=num_parallel_calls)\
+        train_set = train_set.map(self._parse_example, num_parallel_calls=num_parallel_calls) \
             .shuffle(buffer_size=SHUFFLE_BUFF_SIZE, seed=RANDOM_SEED)
         return train_set.batch(self.batch_size, drop_remainder=True).prefetch(1)
 
     def _load_test_set(self):
         test_set = tf.data.TFRecordDataset(self.test_set_files)
-        test_set = test_set.map(self._parse_example, num_parallel_calls=num_parallel_calls)\
+        test_set = test_set.map(self._parse_example, num_parallel_calls=num_parallel_calls) \
             .shuffle(buffer_size=SHUFFLE_BUFF_SIZE, seed=RANDOM_SEED)
         return test_set.batch(self.batch_size).prefetch(1)
 

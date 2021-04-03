@@ -1,6 +1,5 @@
-from tensorflow.python.keras.utils.vis_utils import plot_model
-import numpy as np
 from config import *
+from tensorflow.python.keras.utils.vis_utils import plot_model
 from siamese.cnn import cons_cnn_model
 from siamese.phase_pair_loader import PhasePairLoader
 from siamese.siamese_net import SiameseNet
@@ -20,6 +19,7 @@ def main():
     train_set = dataset_loader.get_train_set()
     test_set = dataset_loader.get_test_set()
     siamese_net.train_with_datasets(train_set, test_set, epochs=1000)
+    siamese_net.save_weights('temple.h5')
 
 
 if __name__ == '__main__':

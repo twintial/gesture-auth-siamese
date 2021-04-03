@@ -12,6 +12,7 @@ PADDING_LEN = 1400
 num_parallel_calls = 1
 
 # neural network config
+TF_CPP_MIN_LOG_LEVEL = '1'
 data_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN)
 phase_input_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN, 1)
 BATCH_SIZE = 32
