@@ -61,19 +61,19 @@ def padding_or_clip(array: np.ndarray, target_len):
 
 # main function
 def convert_wavfile_to_phase_and_magnitude(filename):
-    I_Q_skip = 1000
     # # 这个可能耗时有点长
     # audio_binary = tf.io.read_file(filename)
     # data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-t，t
     # data = data.numpy().T[:-t, int(fs * DELAY_TIME):]
     data, fs = load_audio_data(filename, 'wav')
+    assert fs == FS
     data = data.T[:-1, int(fs * DELAY_TIME):]
     # 开始处理数据
     unwrapped_phase_diff_list = []
     magnitude_diff_list = []
     for i in range(NUM_OF_FREQ):
         fc = F0 + i * STEP
-        data_filter = butter_bandpass_filter(data, fc - 150.0, fc + 150.0)
+        data_filter = butter_bandpass_filter(data, fc - 150.0, fc + 150.0, fs)
         I_raw, Q_raw = get_cos_IQ_raw(data_filter, fc, fs)
         # 滤波+下采样
         I = move_average_overlap_filter(I_raw[:, I_Q_skip:-I_Q_skip])
@@ -85,7 +85,7 @@ def convert_wavfile_to_phase_and_magnitude(filename):
         unwrapped_phase_diff = np.diff(unwrapped_phase)
         magnitude = get_magnitude(I, Q)
         magnitude_diff = np.diff(magnitude)
-        # padding
+        # padding，是不是可以放到外面做
         unwrapped_phase_diff_padded = padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
         magnitude_diff_padded = padding_or_clip(magnitude_diff, PADDING_LEN)
 
