@@ -86,7 +86,7 @@ class PhasePairConvertor:
                             negative_pair_num += 1
                 log.logger.debug(f'finish all npzs in path {path_label_tuple[0]}')
         # 写入样本信息
-        with open(os.path.join(target_path, 'description.txt'), 'w') as f:
+        with open(os.path.join(target_path, f'{tfrecord_file_name.split(".")[0]}-description.txt'), 'w') as f:
             f.write(f'positive pairs: {positive_pair_num}\n')
             f.write(f'negative pairs: {negative_pair_num}\n')
             f.write(f'total pairs: {positive_pair_num + negative_pair_num}\n')
