@@ -2,7 +2,7 @@ import os
 import re
 import numpy as np
 import log
-from siamese.preprocess.wav_to_phase_magn_list import convert_wavfile_to_phase_and_magnitude
+from siamese_cons_loss.preprocess.wav_to_phase_magn_list import convert_wavfile_to_phase_and_magnitude
 
 
 def convert(raw_audio_dir, target_npz_dir):

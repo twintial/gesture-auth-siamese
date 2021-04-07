@@ -2,7 +2,7 @@ import numpy as np
 from scipy.signal import butter, filtfilt
 
 from config import *
-from siamese.preprocess.util import load_audio_data
+from siamese_cons_loss.preprocess.util import load_audio_data
 
 
 def butter_bandpass_filter(data, lowcut, highcut, fs=48e3, order=5):
