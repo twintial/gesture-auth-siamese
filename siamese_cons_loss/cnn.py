@@ -1,4 +1,4 @@
-from tensorflow.keras import initializers, layers, activations, models
+from tensorflow.keras import initializers, layers, activations, models, regularizers
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, ReLU, Dropout
 from tensorflow.keras.models import Sequential
 
