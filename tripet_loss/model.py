@@ -17,9 +17,10 @@ def euclidean_distance(vects):
     return K.sqrt(K.maximum(sum_square, K.epsilon()))
 
 
-def cal_acc(threshold, dist, label):
-    pred = dist < threshold
-    return np.mean(pred == tf.cast(label, tf.bool))
+def accuracy(y_true, y_pred, threshold):  # Tensor上的操作
+    '''Compute classification accuracy with a fixed threshold on distances.
+    '''
+    return K.mean(K.equal(y_true, K.cast(y_pred < threshold, y_true.dtype)))
 
 
 class TripLossModel:
@@ -95,7 +96,7 @@ class TripLossModel:
                     embeddings2 = self.model(te_X[:, 1], training=False)
                     dist = euclidean_distance([embeddings1, embeddings2])
                     for threshold_idx, threshold in enumerate(thresholds):
-                        acc_train[threshold_idx] += cal_acc(threshold, dist, te_Y)
+                        acc_train[threshold_idx] += accuracy(te_Y, dist, threshold)
                     total_batch += 1
                 acc_train /= total_batch
                 best_threshold_index = np.argmax(acc_train)
