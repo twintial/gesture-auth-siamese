@@ -15,7 +15,7 @@ def main():
 
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
                              [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], BATCH_SIZE)
-    model.train(data_loader, loader.get_test_set(), steps=20, epochs=30)
+    model.train(data_loader, loader.get_train_set(), steps=20, epochs=30)
 
 
 import tensorflow.keras.backend as K
