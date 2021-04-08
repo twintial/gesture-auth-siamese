@@ -43,8 +43,8 @@ class PhasePairLoader:
 
 if __name__ == '__main__':
     # test_demo
-    loader = PhasePairLoader([r'D:\实验数据\2021\siamese\train_tfrecord\train.tfrecord'],
-                             [r'D:\实验数据\2021\siamese\test_tfrecord\test.tfrecord'], 32)
+    loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
+                             [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], 32)
     t = loader.get_train_set()
     for d in t:
         print(d)

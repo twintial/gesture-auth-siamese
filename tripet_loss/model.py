@@ -11,8 +11,15 @@ import log
 from train_log_formatter import print_status_bar
 
 
-def sample_phase(dataset, nof_class_per_batch, nof_phases_per_class):
-    pass
+def euclidean_distance(vects):
+    x, y = vects
+    sum_square = K.sum(K.square(x - y), axis=1)
+    return K.sqrt(K.maximum(sum_square, K.epsilon()))
+
+
+def cal_acc(threshold, dist, label):
+    pred = dist < threshold
+    return np.mean(pred == tf.cast(label, tf.bool))
 
 
 class TripLossModel:
@@ -47,10 +54,12 @@ class TripLossModel:
 
         return loss
 
-    def train(self, data_loader, epochs=1000, steps=100):
-        mean_loss = metrics.Mean()
+    def train(self, data_loader, val_dataset=None, epochs=1000, steps=100):
+        mean_train_loss = metrics.Mean()
         for epoch in range(epochs):
-            mean_loss.reset_states()
+            # reset states
+            mean_train_loss.reset_states()
+
             print("Epoch {}/{}".format(epoch + 1, epochs))
             start_time = time.time()
             for step in range(steps):
@@ -74,9 +83,28 @@ class TripLossModel:
                     loss = tf.add_n([triplet_loss] + self.model.losses)
                 gradients = tape.gradient(loss, self.model.trainable_variables)
                 self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-                mean_loss(loss)
+                mean_train_loss(loss)
+                # evaluate
+            if val_dataset is not None:
+                thresholds = np.arange(0, 4, 0.01)
+                nof_thresholds = len(thresholds)
+                acc_train = np.zeros((nof_thresholds))
+                total_batch = 0
+                for te_X, te_Y in val_dataset:
+                    embeddings1 = self.model(te_X[:, 0], training=False)
+                    embeddings2 = self.model(te_X[:, 1], training=False)
+                    dist = euclidean_distance([embeddings1, embeddings2])
+                    for threshold_idx, threshold in enumerate(thresholds):
+                        acc_train[threshold_idx] += cal_acc(threshold, dist, te_Y)
+                    total_batch += 1
+                acc_train /= total_batch
+                best_threshold_index = np.argmax(acc_train)
+                best_threshold = thresholds[best_threshold_index]
+                best_acc = acc_train[best_threshold_index]
+                print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f}')
+
             end_time = time.time()
-            print_status_bar(end_time - start_time, mean_loss)
+            print_status_bar(end_time - start_time, mean_train_loss)
 
     def _select_triplets_idx(self, embeddings, alpha):
         emb_start_idx = 0
