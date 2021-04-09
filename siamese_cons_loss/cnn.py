@@ -46,7 +46,7 @@ def resnet_34(input_shape):
         prev_filters = filters
     model.add(layers.GlobalAvgPool2D())
     model.add(layers.Flatten())
-    model.add(layers.Dense(64, activation="softmax"))
+    model.add(layers.Dense(128))
     return model
 
 

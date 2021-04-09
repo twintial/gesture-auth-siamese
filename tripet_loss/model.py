@@ -67,7 +67,8 @@ class TripLossModel:
                 # batch_size = class_per_batch * phases_per_class
                 batch_dataset = data_loader.get_random_batch(self.nof_class_per_batch, self.nof_phases_per_class)
                 # select triplets
-                embeddings_before_training = self.model(batch_dataset, training=False)
+                # training=True和trainging=False的结果不同，和dropout以及BN等有关
+                embeddings_before_training = self.model(batch_dataset, training=True)
                 # l2，移动到了model中去
                 # embeddings_before_training = K.l2_normalize(embeddings_before_training, axis=1)
                 triplets_idx = self._select_triplets_idx(embeddings_before_training, self.margin)

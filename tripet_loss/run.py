@@ -11,13 +11,13 @@ from tripet_loss.siamese_custom import Siam
 def main():
     np.random.seed(10)
     input_shape = phase_input_shape
-    cnn_net = cons_cnn_model(input_shape)
-    model = TripLossModel(cnn_net, input_shape, 2, 5, 0.3)
+    cnn_net = cons_cnn_model_gai(input_shape)
+    model = TripLossModel(cnn_net, input_shape, 2, 5, 0.5)
     data_loader = PhaseDataLoader([r'D:\实验数据\2021\siamese\e1\train_npz'])
 
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
                              [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], BATCH_SIZE)
-    model.train(data_loader, loader.get_train_set(), steps=20, epochs=30)
+    model.train(data_loader, loader.get_train_set(), steps=10, epochs=30)
 
 
 def test_siam():
@@ -34,6 +34,7 @@ def eval_siam():
     np.random.seed(10)
     input_shape = phase_input_shape
     cnn_net = cons_cnn_model_gai(input_shape)
+    # cnn_net = resnet_34(input_shape)
     model = Siam(cnn_net, input_shape, 0.5)  # 0.5可能更好，这个margin类似学习率，降低了过拟合率
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
                              [r'D:\实验数据\2021\siamese\e2\test_tfrecord\test.tfrecord',
