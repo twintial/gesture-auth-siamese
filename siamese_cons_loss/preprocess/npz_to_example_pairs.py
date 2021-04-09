@@ -48,25 +48,29 @@ class PhasePairConvertor:
                     data_i = np.load(os.path.join(path_label_tuple[0], npz_file_names[i]))
                     phase_diff_i = data_i['phase_diff']
                     # create positive pairs
-                    for j in range(i + 1, file_num):
-                        data_j = np.load(os.path.join(path_label_tuple[0], npz_file_names[j]))
-                        phase_diff_j = data_j['phase_diff']
-                        # get pair
-                        positive_pair = [phase_diff_i, phase_diff_j]
-                        label = 1
-                        # create tf example
-                        tf_example = tf.train.Example(
-                            features=tf.train.Features(
-                                feature={
-                                    'pair': tensor_feature(tf.constant(positive_pair, dtype=tf.float32)),
-                                    'label': int64_feature(label)
-                                }
-                            ))
-                        f.write(tf_example.SerializeToString())
-                        positive_pair_num += 1
+                    # for j in range(i + 1, file_num):
+                    #     data_j = np.load(os.path.join(path_label_tuple[0], npz_file_names[j]))
+                    #     phase_diff_j = data_j['phase_diff']
+                    #     # get pair
+                    #     positive_pair = [phase_diff_i, phase_diff_j]
+                    #     label = 1
+                    #     # create tf example
+                    #     tf_example = tf.train.Example(
+                    #         features=tf.train.Features(
+                    #             feature={
+                    #                 'pair': tensor_feature(tf.constant(positive_pair, dtype=tf.float32)),
+                    #                 'label': int64_feature(label)
+                    #             }
+                    #         ))
+                    #     f.write(tf_example.SerializeToString())
+                    #     positive_pair_num += 1
                     # create nagetive pairs
                     for fake_tuple_index in range(tuple_index + 1, tuple_num):
                         fake_path_label_tuple = self.path_label_tuples[fake_tuple_index]
+                        if 'sjj' in path_label_tuple[0] and 'zq' in fake_path_label_tuple[0]:
+                            print(path_label_tuple[0] + ' ' + fake_path_label_tuple[0])
+                        if 'zq' in path_label_tuple[0] and 'sjj' in fake_path_label_tuple[0]:
+                            print(path_label_tuple[0] + ' ' + fake_path_label_tuple[0])
                         # 列出另一个文件夹（fake）中所有npz文件名
                         fake_npz_file_names = os.listdir(fake_path_label_tuple[0])
                         for fake_npz_file_name in fake_npz_file_names:
@@ -98,6 +102,6 @@ class PhasePairConvertor:
 
 if __name__ == '__main__':
     convertor = PhasePairConvertor()
-    # 要手动新建train_tfrecord和test_tfrecord
-    convertor.create_pairs(r'D:\实验数据\2021\siamese\train_npz', r'D:\实验数据\2021\siamese\train_tfrecord', 'train.tfrecord')
-    convertor.create_pairs(r'D:\实验数据\2021\siamese\test_npz', r'D:\实验数据\2021\siamese\test_tfrecord', 'test.tfrecord')
+    # 要手动新建train_tfrecord和test_tfrecord，不用了
+    convertor.create_pairs(r'D:\实验数据\2021\siamese\e2\test_npz', r'D:\实验数据\2021\siamese\e2\test_tfrecord', 'test.tfrecord')
+    convertor.create_pairs(r'D:\实验数据\2021\siamese\e4\test_npz', r'D:\实验数据\2021\siamese\e4\test_tfrecord', 'test.tfrecord')

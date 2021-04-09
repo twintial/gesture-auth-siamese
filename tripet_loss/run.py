@@ -26,8 +26,21 @@ def test_siam():
     cnn_net = cons_cnn_model_gai(input_shape)
     model = Siam(cnn_net, input_shape, 0.5)  # 0.5可能更好，这个margin类似学习率，降低了过拟合率
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
-                             [r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'], BATCH_SIZE)
+                             [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], BATCH_SIZE)
     model.train(loader.get_train_set(), loader.get_test_set())
+
+
+def eval_siam():
+    np.random.seed(10)
+    input_shape = phase_input_shape
+    cnn_net = cons_cnn_model_gai(input_shape)
+    model = Siam(cnn_net, input_shape, 0.5)  # 0.5可能更好，这个margin类似学习率，降低了过拟合率
+    loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
+                             [r'D:\实验数据\2021\siamese\e2\test_tfrecord\test.tfrecord',
+                              r'D:\实验数据\2021\siamese\e3\test_tfrecord\test.tfrecord',
+                              r'D:\实验数据\2021\siamese\e4\test_tfrecord\test.tfrecord',
+                              r'D:\实验数据\2021\siamese\e5\test_tfrecord\test.tfrecord'], BATCH_SIZE)
+    model.evaluate(loader.get_test_set(), weights_path='models/siamese.h5')
 
 
 import tensorflow.keras.backend as K
@@ -60,4 +73,5 @@ if __name__ == '__main__':
     # gradients = tape.gradient(z, [w1])
     # print(gradients)
     # main()
-    test_siam()
+    # test_siam()
+    eval_siam()

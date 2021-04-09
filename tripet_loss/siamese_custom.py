@@ -5,6 +5,7 @@ from tensorflow.keras import layers, Model, optimizers, metrics
 import tensorflow.keras.backend as K
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 import log
 
 from train_log_formatter import print_status_bar
@@ -130,3 +131,50 @@ class Siam:
             end_time = time.time()
             log_str = f'- {end_time - start_time:.0f}s - {mean_train_loss.name}:{mean_train_loss.result():.4f} - {mean_train_acc.name}:{mean_train_acc.result():.4f}'
             print(log_str)
+
+    def evaluate(self, test_dataset, weights_path=None):
+        if weights_path is not None:
+            self.model.load_weights(weights_path)
+        thresholds = np.arange(0, 4, 0.01)
+        nof_thresholds = len(thresholds)
+        acc_test = np.zeros(nof_thresholds)
+        tp_test = np.zeros(nof_thresholds)
+        fp_test = np.zeros(nof_thresholds)
+        n_same, n_diff = 0, 0
+        total_batch = 0
+        for te_X, te_Y in test_dataset:
+            embeddings1 = self.model(te_X[:, 0], training=False)
+            embeddings2 = self.model(te_X[:, 1], training=False)
+            dist = euclidean_distance([embeddings1, embeddings2])
+            n_same += np.sum(te_Y)
+            n_diff += np.sum(np.logical_not(te_Y))
+            for threshold_idx, threshold in enumerate(thresholds):
+                acc_test[threshold_idx] += accuracy(te_Y, dist, threshold)
+                tp, fp = calculate_tp_fp(te_Y, dist, threshold)
+                tp_test[threshold_idx] += tp
+                fp_test[threshold_idx] += fp
+            total_batch += 1
+        acc_test /= total_batch
+        # 获得最好threshold
+        best_threshold_index = np.argmax(acc_test)
+        best_threshold = thresholds[best_threshold_index]
+        best_acc = acc_test[best_threshold_index]
+        tp_test /= n_same
+        fp_test /= n_diff
+        best_val = tp_test[best_threshold_index]
+        best_far = fp_test[best_threshold_index]
+        print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f} - best_val: {best_val:.4f} - best_far: {best_far:.4f}')
+
+        plt.figure()
+        plt.grid()
+        plt.title('tp&fp/threshold')
+        plt.plot(thresholds, tp_test, label='tp')
+        plt.plot(thresholds, fp_test, label='fp')
+        plt.xlabel('threshold')
+        plt.xticks(np.arange(0, 0.5, 0.01))
+        plt.legend()
+        plt.savefig('net_png/tp&fp.png')
+        plt.show()
+
+    def save_weights(self, weights_path):
+        self.model.save_weights(weights_path)
