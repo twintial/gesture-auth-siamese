@@ -1,5 +1,5 @@
 from config import *
-from siamese_cons_loss.cnn import cons_cnn_model
+from siamese_cons_loss.cnn import *
 from siamese_cons_loss.phase_pair_loader import PhasePairLoader
 from tripet_loss.model import TripLossModel
 from tripet_loss.phase_data_loader import PhaseDataLoader
@@ -23,10 +23,10 @@ def main():
 def test_siam():
     np.random.seed(10)
     input_shape = phase_input_shape
-    cnn_net = cons_cnn_model(input_shape)
-    model = Siam(cnn_net, input_shape, 1)  # 0.5可能更好，这个margin类似学习率，降低了过拟合率
+    cnn_net = cons_cnn_model_gai(input_shape)
+    model = Siam(cnn_net, input_shape, 0.5)  # 0.5可能更好，这个margin类似学习率，降低了过拟合率
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
-                             [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], BATCH_SIZE)
+                             [r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'], BATCH_SIZE)
     model.train(loader.get_train_set(), loader.get_test_set())
 
 

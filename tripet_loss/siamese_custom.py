@@ -7,7 +7,6 @@ import numpy as np
 import time
 import log
 
-
 from train_log_formatter import print_status_bar
 
 
@@ -20,10 +19,24 @@ def euclidean_distance(vects):
 def cal_acc(y_true, y_pred, threshold):
     return np.mean((tf.cast(y_pred, tf.float32) < threshold) == tf.cast(y_true, tf.bool))
 
+
 def accuracy(y_true, y_pred, threshold):  # Tensor上的操作
     '''Compute classification accuracy with a fixed threshold on distances.
     '''
     return K.mean(K.equal(y_true, K.cast(y_pred < threshold, y_true.dtype)))
+
+
+def calculate_val_far(y_true, y_pred, threshold):
+    # y_pred等同于dist
+    predict_is_same = K.cast(y_pred < threshold, y_true.dtype)
+    true_accept = np.sum(np.logical_and(predict_is_same, y_true))
+    false_accept = np.sum(np.logical_and(predict_is_same, np.logical_not(y_true)))
+    n_same = np.sum(y_true)
+    n_diff = np.sum(np.logical_not(y_true))
+    val = true_accept / n_same
+    far = false_accept / n_diff
+    return val, far
+
 
 
 class Siam:
@@ -41,7 +54,7 @@ class Siam:
         input = layers.Input(shape=input_shape)
         # size = class_per_batch * phases_per_class
         embeddings = self.backbone(input)
-        # embeddings = self.l2_norm(embeddings)
+        embeddings = self.l2_norm(embeddings)
         model = Model(inputs=input, outputs=embeddings)
         return model
 
@@ -80,21 +93,31 @@ class Siam:
             if val_dataset is not None:
                 thresholds = np.arange(0, 4, 0.01)
                 nof_thresholds = len(thresholds)
-                acc_train = np.zeros((nof_thresholds))
+                acc_test = np.zeros(nof_thresholds)
+                val_test = np.zeros(nof_thresholds)
+                far_test = np.zeros(nof_thresholds)
                 total_batch = 0
                 for te_X, te_Y in val_dataset:
                     embeddings1 = self.model(te_X[:, 0], training=False)
                     embeddings2 = self.model(te_X[:, 1], training=False)
                     dist = euclidean_distance([embeddings1, embeddings2])
                     for threshold_idx, threshold in enumerate(thresholds):
-                        acc_train[threshold_idx] += accuracy(te_Y, dist, threshold)
+                        acc_test[threshold_idx] += accuracy(te_Y, dist, threshold)
+                        val, far = calculate_val_far(te_Y, dist, threshold)
+                        val_test[threshold_idx] += val
+                        far_test[threshold_idx] += far
                     total_batch += 1
-                acc_train /= total_batch
-                best_threshold_index = np.argmax(acc_train)
+                acc_test /= total_batch
+                val_test /= total_batch
+                far_test /= total_batch
+                # 获得最好threshold
+                best_threshold_index = np.argmax(acc_test)
                 best_threshold = thresholds[best_threshold_index]
-                best_acc = acc_train[best_threshold_index]
-                print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f}')
+                best_acc = acc_test[best_threshold_index]
+                best_val = val_test[best_threshold_index]
+                best_far = far_test[best_threshold_index]
+                print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f} - best_val: {best_val:.4f} - best_far: {best_far:.4f}')
 
             end_time = time.time()
-            log_str = f'- {end_time-start_time:.0f}s - {mean_train_loss.name}:{mean_train_loss.result():.4f} - {mean_train_acc.name}:{mean_train_acc.result():.4f}'
+            log_str = f'- {end_time - start_time:.0f}s - {mean_train_loss.name}:{mean_train_loss.result():.4f} - {mean_train_acc.name}:{mean_train_acc.result():.4f}'
             print(log_str)

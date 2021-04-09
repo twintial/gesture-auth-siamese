@@ -89,7 +89,7 @@ class TripLossModel:
             if val_dataset is not None:
                 thresholds = np.arange(0, 4, 0.01)
                 nof_thresholds = len(thresholds)
-                acc_train = np.zeros((nof_thresholds))
+                acc_train = np.zeros(nof_thresholds)
                 total_batch = 0
                 for te_X, te_Y in val_dataset:
                     embeddings1 = self.model(te_X[:, 0], training=False)
