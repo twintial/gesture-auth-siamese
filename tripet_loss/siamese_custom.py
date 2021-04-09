@@ -25,7 +25,7 @@ def accuracy(y_true, y_pred, threshold):  # Tensor上的操作
     '''
     return K.mean(K.equal(y_true, K.cast(y_pred < threshold, y_true.dtype)))
 
-
+# batch的情况下不太好用
 def calculate_val_far(y_true, y_pred, threshold):
     # y_pred等同于dist
     predict_is_same = K.cast(y_pred < threshold, y_true.dtype)
@@ -36,6 +36,14 @@ def calculate_val_far(y_true, y_pred, threshold):
     val = true_accept / n_same
     far = false_accept / n_diff
     return val, far
+
+
+def calculate_tp_fp(y_true, y_pred, threshold):
+    # y_pred等同于dist
+    predict_is_same = K.cast(y_pred < threshold, y_true.dtype)
+    true_accept = np.sum(np.logical_and(predict_is_same, y_true))
+    false_accept = np.sum(np.logical_and(predict_is_same, np.logical_not(y_true)))
+    return true_accept, false_accept
 
 
 
@@ -94,28 +102,29 @@ class Siam:
                 thresholds = np.arange(0, 4, 0.01)
                 nof_thresholds = len(thresholds)
                 acc_test = np.zeros(nof_thresholds)
-                val_test = np.zeros(nof_thresholds)
-                far_test = np.zeros(nof_thresholds)
+                tp_test = np.zeros(nof_thresholds)
+                fp_test = np.zeros(nof_thresholds)
+                n_same, n_diff = 0, 0
                 total_batch = 0
                 for te_X, te_Y in val_dataset:
                     embeddings1 = self.model(te_X[:, 0], training=False)
                     embeddings2 = self.model(te_X[:, 1], training=False)
                     dist = euclidean_distance([embeddings1, embeddings2])
+                    n_same += np.sum(te_Y)
+                    n_diff += np.sum(np.logical_not(te_Y))
                     for threshold_idx, threshold in enumerate(thresholds):
                         acc_test[threshold_idx] += accuracy(te_Y, dist, threshold)
-                        val, far = calculate_val_far(te_Y, dist, threshold)
-                        val_test[threshold_idx] += val
-                        far_test[threshold_idx] += far
+                        tp, fp = calculate_tp_fp(te_Y, dist, threshold)
+                        tp_test[threshold_idx] += tp
+                        fp_test[threshold_idx] += fp
                     total_batch += 1
                 acc_test /= total_batch
-                val_test /= total_batch
-                far_test /= total_batch
                 # 获得最好threshold
                 best_threshold_index = np.argmax(acc_test)
                 best_threshold = thresholds[best_threshold_index]
                 best_acc = acc_test[best_threshold_index]
-                best_val = val_test[best_threshold_index]
-                best_far = far_test[best_threshold_index]
+                best_val = tp_test[best_threshold_index] / n_same
+                best_far = fp_test[best_threshold_index] / n_diff
                 print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f} - best_val: {best_val:.4f} - best_far: {best_far:.4f}')
 
             end_time = time.time()
