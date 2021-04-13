@@ -76,16 +76,30 @@ class TripLossModel:
                     log.logger.warn('no triplets')
                     continue
                 input_triplet = batch_dataset[triplets_idx]
-                with tf.GradientTape() as tape:
-                    triplet_embeddings = self.model(input_triplet, training=True)
-                    # l2
-                    # triplet_embeddings = K.l2_normalize(triplet_embeddings, axis=1)
-                    triplet_loss = self.triplet_loss(triplet_embeddings)
-                    # self.model.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
-                    loss = tf.add_n([triplet_loss] + self.model.losses)
-                gradients = tape.gradient(loss, self.model.trainable_variables)
-                self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-                mean_train_loss(loss)
+                # with tf.GradientTape() as tape:
+                #     triplet_embeddings = self.model(input_triplet, training=True)
+                #     # l2
+                #     # triplet_embeddings = K.l2_normalize(triplet_embeddings, axis=1)
+                #     triplet_loss = self.triplet_loss(triplet_embeddings)
+                #     # self.model.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
+                #     loss = tf.add_n([triplet_loss] + self.model.losses)
+                # gradients = tape.gradient(loss, self.model.trainable_variables)
+                # self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+                # mean_train_loss(loss)
+                # 再分batch
+                batch_size = 16 * 3
+                for i in range(input_triplet.shape[0]//batch_size+1):
+                    batch_input = input_triplet[i*batch_size:(i+1)*batch_size]
+                    with tf.GradientTape() as tape:
+                        triplet_embeddings = self.model(batch_input, training=True)
+                        # l2
+                        # triplet_embeddings = K.l2_normalize(triplet_embeddings, axis=1)
+                        triplet_loss = self.triplet_loss(triplet_embeddings)
+                        # self.model.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
+                        loss = tf.add_n([triplet_loss] + self.model.losses)
+                    gradients = tape.gradient(loss, self.model.trainable_variables)
+                    self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+                    mean_train_loss(loss)
                 # evaluate
             if val_dataset is not None:
                 thresholds = np.arange(0, 4, 0.01)

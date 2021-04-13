@@ -163,7 +163,10 @@ class Siam:
         fp_test /= n_diff
         best_val = tp_test[best_threshold_index]
         best_far = fp_test[best_threshold_index]
-        print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f} - best_val: {best_val:.4f} - best_far: {best_far:.4f}')
+        # 计算auc
+        auc = np.sum(((tp_test[:-1]+tp_test[1:]) * np.diff(fp_test)) / 2)
+
+        print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f} - best_val: {best_val:.4f} - best_far: {best_far:.4f} - auc: {auc:.4f}')
 
         plt.figure()
         plt.grid()
