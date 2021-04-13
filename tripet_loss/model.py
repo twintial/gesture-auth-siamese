@@ -23,6 +23,14 @@ def accuracy(y_true, y_pred, threshold):  # Tensor上的操作
     return K.mean(K.equal(y_true, K.cast(y_pred < threshold, y_true.dtype)))
 
 
+def calculate_tp_fp(y_true, y_pred, threshold):
+    # y_pred等同于dist
+    predict_is_same = K.cast(y_pred < threshold, y_true.dtype)
+    true_accept = np.sum(np.logical_and(predict_is_same, y_true))
+    false_accept = np.sum(np.logical_and(predict_is_same, np.logical_not(y_true)))
+    return true_accept, false_accept
+
+
 class TripLossModel:
     def __init__(self, backbone, input_shape, nof_class_per_batch, nof_phases_per_class, margin):
         self.backbone: Model = backbone
@@ -68,7 +76,7 @@ class TripLossModel:
                 batch_dataset = data_loader.get_random_batch(self.nof_class_per_batch, self.nof_phases_per_class)
                 # select triplets
                 # training=True和trainging=False的结果不同，和dropout以及BN等有关
-                embeddings_before_training = self.model(batch_dataset, training=True)
+                embeddings_before_training = self.model(batch_dataset, training=False)
                 # l2，移动到了model中去
                 # embeddings_before_training = K.l2_normalize(embeddings_before_training, axis=1)
                 triplets_idx = self._select_triplets_idx(embeddings_before_training, self.margin)
@@ -104,20 +112,40 @@ class TripLossModel:
             if val_dataset is not None:
                 thresholds = np.arange(0, 4, 0.01)
                 nof_thresholds = len(thresholds)
-                acc_train = np.zeros(nof_thresholds)
+                acc_test = np.zeros(nof_thresholds)
+                tp_test = np.zeros(nof_thresholds)
+                fp_test = np.zeros(nof_thresholds)
+                n_same, n_diff = 0, 0
                 total_batch = 0
                 for te_X, te_Y in val_dataset:
                     embeddings1 = self.model(te_X[:, 0], training=False)
                     embeddings2 = self.model(te_X[:, 1], training=False)
                     dist = euclidean_distance([embeddings1, embeddings2])
+                    n_same += np.sum(te_Y)
+                    n_diff += np.sum(np.logical_not(te_Y))
                     for threshold_idx, threshold in enumerate(thresholds):
-                        acc_train[threshold_idx] += accuracy(te_Y, dist, threshold)
+                        acc_test[threshold_idx] += accuracy(te_Y, dist, threshold)
+                        tp, fp = calculate_tp_fp(te_Y, dist, threshold)
+                        tp_test[threshold_idx] += tp
+                        fp_test[threshold_idx] += fp
                     total_batch += 1
-                acc_train /= total_batch
-                best_threshold_index = np.argmax(acc_train)
+                acc_test /= total_batch
+                # 获得最好threshold
+                best_threshold_index = np.argmax(acc_test)
                 best_threshold = thresholds[best_threshold_index]
-                best_acc = acc_train[best_threshold_index]
-                print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f}')
+                best_acc = acc_test[best_threshold_index]
+                tp_test /= n_same
+                fp_test /= n_diff
+                best_val = tp_test[best_threshold_index]
+                best_far = fp_test[best_threshold_index]
+                # 计算auc
+                auc = np.sum(((tp_test[:-1] + tp_test[1:]) * np.diff(fp_test)) / 2)
+                # 计算平均acc
+                mean_acc = (tp_test + 1 - fp_test) / 2
+                best_mean_acc = np.max(mean_acc)
+
+                print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f}'
+                      f' - best_val: {best_val:.4f} - best_far: {best_far:.4f} - auc: {auc:.4f} - best_mean_acc: {best_mean_acc:.4f}')
 
             end_time = time.time()
             print_status_bar(end_time - start_time, mean_train_loss)
@@ -146,3 +174,6 @@ class TripLossModel:
             emb_start_idx += self.nof_phases_per_class
         np.random.shuffle(triplets)
         return np.reshape(triplets, -1)
+
+    def save_weights(self, weights_path):
+        self.model.save_weights(weights_path)

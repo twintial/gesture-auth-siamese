@@ -35,7 +35,7 @@ def eval_siam():
     input_shape = phase_input_shape
     cnn_net = cons_cnn_model_gai(input_shape)
     # cnn_net = resnet_34(input_shape)
-    model = Siam(cnn_net, input_shape, 0.5)  # 0.5可能更好，这个margin类似学习率，降低了过拟合率
+    model = Siam(cnn_net, input_shape, 0.5)
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
                              [r'D:\实验数据\2021\siamese\e2\test_tfrecord\test.tfrecord',
                               r'D:\实验数据\2021\siamese\e3\test_tfrecord\test.tfrecord',
@@ -73,6 +73,6 @@ if __name__ == '__main__':
     # print(z)
     # gradients = tape.gradient(z, [w1])
     # print(gradients)
-    main()
+    # main()
     # test_siam()
-    # eval_siam()
+    eval_siam()
