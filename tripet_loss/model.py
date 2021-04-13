@@ -95,9 +95,12 @@ class TripLossModel:
                 # self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
                 # mean_train_loss(loss)
                 # 再分batch
-                batch_size = 16 * 3
+                batch_size = 32 * 3
                 for i in range(input_triplet.shape[0]//batch_size+1):
                     batch_input = input_triplet[i*batch_size:(i+1)*batch_size]
+                    if len(batch_input) == 0:
+                        log.logger.warn('no batch')
+                        continue
                     with tf.GradientTape() as tape:
                         triplet_embeddings = self.model(batch_input, training=True)
                         # l2
