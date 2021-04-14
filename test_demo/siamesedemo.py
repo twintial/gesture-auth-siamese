@@ -9,7 +9,7 @@ def euclidean_distance(vects):
 class CNNLSTM(Model):
     def __init__(self):
         super(CNNLSTM, self).__init__()
-        # cnn layers
+        # fusion layers
         self.input_layer = layers.Input(shape=(None, 8, 100, 1))
         self.conv_1 = layers.TimeDistributed(layers.Conv2D(filters=16, kernel_size=(2, 11), strides=(1, 2)))
 

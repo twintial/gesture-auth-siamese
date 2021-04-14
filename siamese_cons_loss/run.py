@@ -12,7 +12,7 @@ def main():
     input_shape = phase_input_shape
     cnn_net = cons_cnn_model(input_shape)
     # cnn_net.summary()
-    plot_model(cnn_net, to_file="cnn.png", show_shapes=True)
+    plot_model(cnn_net, to_file="fusion.png", show_shapes=True)
     siamese_net = SiameseNet(cnn_net)
     # siamese_net.model.summary()
     plot_model(siamese_net.model, to_file="siamese_cons_loss.png", show_shapes=True)

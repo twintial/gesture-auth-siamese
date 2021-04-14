@@ -55,8 +55,6 @@ def cons_phase_model(input_shape):
 
     cnn_model.add(Flatten(name='Flatten'))
     cnn_model.add(Dense(128, activation='relu', bias_initializer=initializers.Constant(value=0.1), name='Dense_1'))
-    cnn_model.add(Dropout(rate=0.2, name='Dropout'))  # 表示丢弃,0.5还行
-    cnn_model.add(Dense(64, activation='softmax', name='Output_layer'))
     return cnn_model
 
 
@@ -110,8 +108,6 @@ def cons_magn_model(input_shape):
 
     cnn_model.add(Flatten(name='Flatten'))
     cnn_model.add(Dense(128, activation='relu', bias_initializer=initializers.Constant(value=0.1), name='Dense_1'))
-    cnn_model.add(Dropout(rate=0.2, name='Dropout'))  # 表示丢弃,0.5还行
-    cnn_model.add(Dense(64, activation='softmax', name='Output_layer'))
     return cnn_model
 
 
@@ -137,7 +133,7 @@ class FusionModel:
         magn_input = layers.Input(shape=magn_input_shape)
         magn_embedding = self.magn_model(magn_input)
         # fusion，最简单的concat
-        fusion_embedding = layers.concatenate([phase_embedding, magn_embedding], axis=2)
+        fusion_embedding = layers.concatenate([phase_embedding, magn_embedding])
         flattened_fe = self.f_embedding_fatten(fusion_embedding)
         output = self.f_embedding_softmax(flattened_fe)
 
@@ -156,4 +152,3 @@ class FusionModel:
 
     def save_weights(self, weights_path):
         self.model.save_weights(weights_path)
-
