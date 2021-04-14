@@ -1,8 +1,9 @@
-from config import *
 import tensorflow as tf
 
+from config import *
 
-class PhasePairLoader:
+
+class DataLoader:
     def __init__(self, train_set_files, test_set_files, batch_size):
         self.train_set_files = train_set_files
         self.test_set_files = test_set_files
@@ -14,13 +15,13 @@ class PhasePairLoader:
     @staticmethod
     def _parse_example(example_proto):
         feature_description = {
-            'pair': tf.io.VarLenFeature(tf.string),
+            'phase_magn_diff': tf.io.VarLenFeature(tf.string),
             'label': tf.io.FixedLenFeature([], tf.int64),
         }
         parsed_example = tf.io.parse_single_example(example_proto, feature_description)
-        pair = tf.io.parse_tensor(parsed_example['pair'].values[0], tf.float32)
+        phase_magn_diff = tf.io.parse_tensor(parsed_example['phase_magn_diff'].values[0], tf.float32)
         label = parsed_example['label']
-        return tf.stack(pair), tf.stack(label)
+        return tf.stack(phase_magn_diff), tf.stack(label)
 
     def _load_train_set(self):
         train_set = tf.data.TFRecordDataset(self.train_set_files)
@@ -43,8 +44,8 @@ class PhasePairLoader:
 
 if __name__ == '__main__':
     # test_demo
-    loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
-                             [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], 32)
+    loader = DataLoader([r'D:\实验数据\2021\毕设\micarrayspeaker\tfrecord\train.tfrecord'],
+                        [r'D:\实验数据\2021\毕设\micarrayspeaker\tfrecord\test.tfrecord'], 32)
     t = loader.get_train_set()
     for d in t:
         print(d)

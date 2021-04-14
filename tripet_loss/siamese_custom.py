@@ -8,7 +8,7 @@ import time
 import matplotlib.pyplot as plt
 import log
 
-from train_log_formatter import print_status_bar
+from train_log_formatter import print_status_bar_ver1
 
 
 def euclidean_distance(vects):

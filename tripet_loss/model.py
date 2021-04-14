@@ -8,7 +8,7 @@ import time
 import log
 
 
-from train_log_formatter import print_status_bar
+from train_log_formatter import print_status_bar_ver1
 
 
 def euclidean_distance(vects):
@@ -151,7 +151,7 @@ class TripLossModel:
                       f' - best_val: {best_val:.4f} - best_far: {best_far:.4f} - auc: {auc:.4f} - best_mean_acc: {best_mean_acc:.4f}')
 
             end_time = time.time()
-            print_status_bar(end_time - start_time, mean_train_loss)
+            print_status_bar_ver1(end_time - start_time, mean_train_loss)
 
     def _select_triplets_idx(self, embeddings, alpha):
         emb_start_idx = 0

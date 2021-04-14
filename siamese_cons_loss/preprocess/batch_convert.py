@@ -30,6 +30,7 @@ def convert(raw_audio_dir, target_npz_dir):
 
 if __name__ == '__main__':
     # train
-    convert(r'D:\实验数据\2021\siamese\train', r'D:\实验数据\2021\siamese\train_npz')
+    # convert(r'D:\实验数据\2021\siamese\train', r'D:\实验数据\2021\siamese\train_npz')
     # test_demo
-    convert(r'D:\实验数据\2021\siamese\test', r'D:\实验数据\2021\siamese\test_npz')
+    # convert(r'D:\实验数据\2021\siamese\test', r'D:\实验数据\2021\siamese\test_npz')
+    convert(r'D:\实验数据\2021\毕设\micarrayspeaker\raw', r'D:\实验数据\2021\毕设\micarrayspeaker\npz')

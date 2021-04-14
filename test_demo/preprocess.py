@@ -110,5 +110,5 @@ def get_data_from_tfrecord():
 
 
 if __name__ == '__main__':
-    # generate_tfrecord()
-    get_data_from_tfrecord()
+    generate_tfrecord()
+    # get_data_from_tfrecord()
