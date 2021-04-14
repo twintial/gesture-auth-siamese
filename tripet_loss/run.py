@@ -8,6 +8,7 @@ import numpy as np
 from tripet_loss.siamese_custom import Siam
 
 
+# tirplet loss
 def main():
     np.random.seed(10)
     input_shape = phase_input_shape
@@ -20,6 +21,7 @@ def main():
     model.train(data_loader, loader.get_train_set(), steps=10, epochs=50)
 
 
+# 对比损失
 def test_siam():
     np.random.seed(10)
     input_shape = phase_input_shape
@@ -30,6 +32,7 @@ def test_siam():
     model.train(loader.get_train_set(), loader.get_test_set())
 
 
+# triplet loss 或 对比损失 evaluate
 def eval_siam():
     np.random.seed(10)
     input_shape = phase_input_shape

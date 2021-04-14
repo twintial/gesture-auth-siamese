@@ -38,6 +38,7 @@ def compute_accuracy(y_true, y_pred):  # numpy上的操作
     return np.mean(pred == y_true)
 
 
+@DeprecationWarning
 class SiameseNet:
     def __init__(self, base_net: tf.keras.Model, trained_weight_path=None):
         self.base_net = base_net

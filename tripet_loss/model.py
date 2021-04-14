@@ -94,7 +94,7 @@ class TripLossModel:
                 # gradients = tape.gradient(loss, self.model.trainable_variables)
                 # self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
                 # mean_train_loss(loss)
-                # 再分batch
+                # 再分batch，可以移到config
                 batch_size = 32 * 3
                 for i in range(input_triplet.shape[0]//batch_size+1):
                     batch_input = input_triplet[i*batch_size:(i+1)*batch_size]
