@@ -79,10 +79,29 @@ class NpzDataSplitor:
         self.npz2tfrecord(target_path, test_tfrecord, test_set)
         log.logger.info('test set convert finish')
 
+    # 只能为之前那样的数据收集方式划分，10个手势，每种10个
+    def span_times_split_special_for_100_10(self, npz_path, target_path, train_tfrecord, test_tfrecord, train_set_rate=0.8):
+        os.makedirs(target_path)
+        train_set = []
+        test_set = []
+        if self.user_gesture_dict is None:
+            self._create_filename_label_tuples(npz_path)
+        # 划分
+        for v in self.user_gesture_dict.values():
+            for gesture_path in v:
+                if ('gesture5' in gesture_path[0]) or ('gesture6' in gesture_path[0]):
+                    test_set.append(gesture_path)
+                else:
+                    train_set.append(gesture_path)
+        self.npz2tfrecord(target_path, train_tfrecord, train_set)
+        log.logger.info('train set convert finish')
+        self.npz2tfrecord(target_path, test_tfrecord, test_set)
+        log.logger.info('test set convert finish')
+
 
 if __name__ == '__main__':
     splitor = NpzDataSplitor(10)
-    splitor.random_split_of_per_user(r'D:\实验数据\2021\毕设\micarrayspeaker\npz',
-                                     r'D:\实验数据\2021\毕设\micarrayspeaker\tfrecord',
+    splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\毕设\micarrayspeaker\npz',
+                                     r'D:\实验数据\2021\毕设\micarrayspeaker\span_times_split',
                                      'train.tfrecord',
                                      'test.tfrecord')

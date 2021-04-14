@@ -160,6 +160,8 @@ class FusionModel:
             # reset states
             mean_train_loss.reset_states()
             mean_train_acc.reset_states()
+            mean_test_loss.reset_states()
+            mean_test_acc.reset_states()
             print("Epoch {}/{}".format(epoch + 1, epochs))
             start_time = time.time()
             for X, Y in train_set:
@@ -168,7 +170,7 @@ class FusionModel:
                 mean_train_acc(acc)
             if test_set is not None:
                 for te_X, te_Y in test_set:
-                    loss, acc = self.model.train_on_batch([te_X[:, 0], te_X[:, 1]], te_Y)
+                    loss, acc = self.model.evaluate([te_X[:, 0], te_X[:, 1]], te_Y, verbose=0)
                     mean_test_loss(loss)
                     mean_test_acc(acc)
             end_time = time.time()

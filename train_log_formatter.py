@@ -7,7 +7,7 @@ def print_log(cost_time, train_loss, train_acc, val_loss, val_acc):
 def print_status_bar_ver0(time, *metrix):
     log_str = f'- {time:.0f}s'
     for m in metrix:
-        log_str += f'- {m.name}: {m.result(): .4f}'
+        log_str += f'- {m.name}:{m.result(): .4f}'
     print(log_str)
 
 
