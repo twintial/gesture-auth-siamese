@@ -8,8 +8,8 @@ def main():
     magn_model = cons_magn_model(phase_input_shape)
     fusion_model = FusionModel(phase_model, magn_model, 10)
     # 构建数据集
-    dataset_loader = DataLoader([r'D:\实验数据\2021\毕设\micarrayspeaker\random_split\train.tfrecord'],
-                                [r'D:\实验数据\2021\毕设\micarrayspeaker\random_split\test.tfrecord'],
+    dataset_loader = DataLoader([r'D:\实验数据\2021\毕设\micarrayspeaker\span_times_split\train.tfrecord'],
+                                [r'D:\实验数据\2021\毕设\micarrayspeaker\span_times_split\test.tfrecord'],
                                 BATCH_SIZE)
     train_set = dataset_loader.get_train_set()
     test_set = dataset_loader.get_test_set()

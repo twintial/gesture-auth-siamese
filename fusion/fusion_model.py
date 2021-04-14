@@ -124,6 +124,7 @@ class FusionModel:
 
         # layers for fusion embedding
         self.f_embedding_fatten = layers.Flatten()
+        self.f_embedding_dropout = layers.Dropout(0.5)
         self.f_embedding_softmax = layers.Dense(n_classes, activation=activations.get('softmax'))
 
         self.model = self._construct_fusion_architecture()
@@ -139,7 +140,8 @@ class FusionModel:
         # fusion，最简单的concat
         fusion_embedding = layers.concatenate([phase_embedding, magn_embedding])
         flattened_fe = self.f_embedding_fatten(fusion_embedding)
-        output = self.f_embedding_softmax(flattened_fe)
+        dropout_fe = self.f_embedding_dropout(flattened_fe)
+        output = self.f_embedding_softmax(dropout_fe)
 
         model = Model(inputs=[phase_input, magn_input], outputs=[output])
         return model
