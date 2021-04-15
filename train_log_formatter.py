@@ -4,10 +4,12 @@ def print_log(cost_time, train_loss, train_acc, val_loss, val_acc):
     print(log_str)
 
 
-def print_status_bar_ver0(time, *metrix):
+def print_status_bar_ver0(time, *metrics, **kwargs):
     log_str = f'- {time:.0f}s'
-    for m in metrix:
-        log_str += f'- {m.name}:{m.result(): .4f}'
+    for m in metrics:
+        log_str += f' - {m.name}:{m.result():.4f}'
+    for k, v in kwargs.items():
+        log_str += f' - {k}:{v:.4f}'
     print(log_str)
 
 

@@ -158,6 +158,7 @@ class FusionModel:
         mean_train_acc = metrics.Mean(name='acc')
         mean_test_loss = metrics.Mean(name='val_loss')
         mean_test_acc = metrics.Mean(name='val_acc')
+        best_test_acc = 0  # 记录最好测试集数据
         for epoch in range(epochs):
             # reset states
             mean_train_loss.reset_states()
@@ -175,8 +176,12 @@ class FusionModel:
                     loss, acc = self.model.evaluate([te_X[:, 0], te_X[:, 1]], te_Y, verbose=0)
                     mean_test_loss(loss)
                     mean_test_acc(acc)
+                if mean_test_acc.result() >= best_test_acc:
+                    best_test_acc = mean_test_acc.result()
             end_time = time.time()
-            print_status_bar_ver0(end_time-start_time, mean_train_loss, mean_train_acc, mean_test_loss, mean_test_acc)
+            print_status_bar_ver0(end_time-start_time,
+                                  mean_train_loss, mean_train_acc, mean_test_loss, mean_test_acc,
+                                  best_acc=best_test_acc)
 
     def save_weights(self, weights_path):
         self.model.save_weights(weights_path)
