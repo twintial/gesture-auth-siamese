@@ -1,6 +1,6 @@
 import time
 
-from tensorflow.keras import initializers, layers, activations, Model, optimizers,losses, metrics
+from tensorflow.keras import initializers, layers, activations, Model, optimizers, losses, metrics
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, ReLU, Dropout
 from tensorflow.keras.models import Sequential
 
@@ -179,7 +179,7 @@ class FusionModel:
                 if mean_test_acc.result() >= best_test_acc:
                     best_test_acc = mean_test_acc.result()
             end_time = time.time()
-            print_status_bar_ver0(end_time-start_time,
+            print_status_bar_ver0(end_time - start_time,
                                   mean_train_loss, mean_train_acc, mean_test_loss, mean_test_acc,
                                   best_acc=best_test_acc)
 

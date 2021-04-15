@@ -4,6 +4,7 @@ def print_log(cost_time, train_loss, train_acc, val_loss, val_acc):
     print(log_str)
 
 
+# 通用
 def print_status_bar_ver0(time, *metrics, **kwargs):
     log_str = f'- {time:.0f}s'
     for m in metrics:
