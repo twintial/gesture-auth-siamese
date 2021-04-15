@@ -14,7 +14,7 @@ def main():
     # cnn_net.summary()
     plot_model(cnn_net, to_file="fusion.png", show_shapes=True)
     siamese_net = SiameseNet(cnn_net)
-    # siamese_net.model.summary()
+    # siamese_net.models.summary()
     plot_model(siamese_net.model, to_file="siamese_cons_loss.png", show_shapes=True)
     # 构建数据集
     # dataset_loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],

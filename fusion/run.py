@@ -16,7 +16,7 @@ def main():
                                 BATCH_SIZE)
     train_set = dataset_loader.get_train_set()
     test_set = dataset_loader.get_test_set()
-    fusion_model.train_with_tfdataset(train_set, test_set, epochs=1000)
+    fusion_model.train_with_tfdataset(train_set, test_set, epochs=1000, weights_path='models/fusion1234.h5')
 
 
 if __name__ == '__main__':

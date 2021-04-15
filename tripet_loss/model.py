@@ -85,14 +85,14 @@ class TripLossModel:
                     continue
                 input_triplet = batch_dataset[triplets_idx]
                 # with tf.GradientTape() as tape:
-                #     triplet_embeddings = self.model(input_triplet, training=True)
+                #     triplet_embeddings = self.models(input_triplet, training=True)
                 #     # l2
                 #     # triplet_embeddings = K.l2_normalize(triplet_embeddings, axis=1)
                 #     triplet_loss = self.triplet_loss(triplet_embeddings)
-                #     # self.model.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
-                #     loss = tf.add_n([triplet_loss] + self.model.losses)
-                # gradients = tape.gradient(loss, self.model.trainable_variables)
-                # self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+                #     # self.models.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
+                #     loss = tf.add_n([triplet_loss] + self.models.losses)
+                # gradients = tape.gradient(loss, self.models.trainable_variables)
+                # self.optimizer.apply_gradients(zip(gradients, self.models.trainable_variables))
                 # mean_train_loss(loss)
                 # 再分batch，可以移到config
                 batch_size = 32 * 3
@@ -106,7 +106,7 @@ class TripLossModel:
                         # l2
                         # triplet_embeddings = K.l2_normalize(triplet_embeddings, axis=1)
                         triplet_loss = self.triplet_loss(triplet_embeddings)
-                        # self.model.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
+                        # self.models.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
                         loss = tf.add_n([triplet_loss] + self.model.losses)
                     gradients = tape.gradient(loss, self.model.trainable_variables)
                     self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))

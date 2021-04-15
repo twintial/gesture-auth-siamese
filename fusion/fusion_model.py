@@ -153,7 +153,7 @@ class FusionModel:
                            optimizer=optimizers.Adam(),
                            metrics=metrics.sparse_categorical_accuracy)
 
-    def train_with_tfdataset(self, train_set, test_set=None, epochs=1000):
+    def train_with_tfdataset(self, train_set, test_set=None, epochs=1000, weights_path=None):
         mean_train_loss = metrics.Mean(name='loss')
         mean_train_acc = metrics.Mean(name='acc')
         mean_test_loss = metrics.Mean(name='val_loss')
@@ -178,6 +178,8 @@ class FusionModel:
                     mean_test_acc(acc)
                 if mean_test_acc.result() >= best_test_acc:
                     best_test_acc = mean_test_acc.result()
+                    if weights_path is not None:
+                        self.save_weights(weights_path)
             end_time = time.time()
             print_status_bar_ver0(end_time - start_time,
                                   mean_train_loss, mean_train_acc, mean_test_loss, mean_test_acc,

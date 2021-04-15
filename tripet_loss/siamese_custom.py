@@ -92,7 +92,7 @@ class Siam:
                     embeddings2 = self.model(X[:, 1], training=True)
                     dist = euclidean_distance([embeddings1, embeddings2])
                     constractive_loss = self.contrastive_loss(Y, dist)
-                    # self.model.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
+                    # self.models.losses是一个数组，可能是一个空数组，和l2正则化之类的有关
                     loss = tf.add_n([constractive_loss] + self.model.losses)
                 gradients = tape.gradient(loss, self.model.trainable_variables)
                 self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
