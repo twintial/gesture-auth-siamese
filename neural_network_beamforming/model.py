@@ -10,6 +10,10 @@ from config import *
 from train_log_formatter import print_status_bar_ver0
 
 
+def tf_diff(a):
+    return a[:, :, 1:] - a[:, :, :-1]
+
+
 def get_batch_phase_diff(I, Q):
     signal = I + 1j * Q
     angle = np.angle(signal)
@@ -18,11 +22,25 @@ def get_batch_phase_diff(I, Q):
     return unwrap_angle_diff
 
 
+def get_batch_phase_diff_tf(I, Q):
+    angle = tf.atan2(Q, I)
+    # unwrap_angle = np.unwrap(angle)
+    unwrap_angle_diff = tf_diff(angle)
+    return unwrap_angle_diff
+
+
 def get_batch_magnitude(I, Q):
     signal = I + 1j * Q
     magn = np.abs(signal)
     magn = 10 * np.log10(magn)
-    magn_diff = np.diff(magn)
+    magn_diff = tf_diff(magn)
+    return magn_diff
+
+
+def get_batch_magnitude_tf(I, Q):
+    magn = I ** 2 + Q ** 2
+    magn = 10 * tf.math.log(magn)
+    magn_diff = magn[:, :, 1:] - magn[:, :, :-1]
     return magn_diff
 
 
@@ -141,7 +159,7 @@ class DeepUltraGesture:
         # I & Q
         self.I_Q_input_shape = [(PADDING_LEN, N_CHANNELS * NUM_OF_FREQ), (PADDING_LEN, N_CHANNELS * NUM_OF_FREQ)]
         # phase & magn
-        self.p_m_input_shape = [(NUM_OF_FREQ * 2, PADDING_LEN-2, 1), (NUM_OF_FREQ * 2, PADDING_LEN-2, 1)]
+        self.p_m_input_shape = [(NUM_OF_FREQ * 2, PADDING_LEN - 2, 1), (NUM_OF_FREQ * 2, PADDING_LEN - 2, 1)]
 
         # layers for neural network beamforming
         self.blstm = layers.Bidirectional(layers.LSTM(256, return_sequences=True))  # 输出长度为512
@@ -224,21 +242,20 @@ class DeepUltraGesture:
                     Q_beamform = tf.transpose(Q_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
 
                     # 求phase和magn
-                    phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
-
-
-                    # 因为网络关系，暂时加两个diff
-                    phase_diff_2 = np.diff(phase_diff)
-                    phase_input = np.concatenate((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
-
-
-                    magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
-
+                    phase_diff = get_batch_phase_diff_tf(I_beamform, Q_beamform)
 
                     # 因为网络关系，暂时加两个diff
-                    magn_diff_2 = np.diff(magn_diff)
-                    magn_input = np.concatenate((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
+                    phase_diff_2 = tf_diff(phase_diff)
+                    phase_input = tf.concat((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
 
+                    magn_diff = get_batch_magnitude_tf(I_beamform, Q_beamform)
+
+                    # 因为网络关系，暂时加两个diff
+                    magn_diff_2 = tf_diff(magn_diff)
+                    magn_input = tf.concat((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
+
+                    # tape.watch(phase_input)
+                    # tape.watch(magn_diff)
 
                     softmax_output = self.fusion_model([phase_input, magn_input])
 
@@ -258,7 +275,7 @@ class DeepUltraGesture:
                 for te_X, te_Y in test_set:
                     I, Q = te_X[:, 0], te_X[:, 1]
                     I_mask, Q_mask = self.beamforming_model([I, Q],
-                                                            trainable=False)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
+                                                            training=False)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
                     I_beamform = I * I_mask - Q * Q_mask
                     Q_beamform = I * Q_mask + Q * I_mask
                     I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
@@ -286,7 +303,7 @@ class DeepUltraGesture:
                     magn_diff_2 = np.diff(magn_diff)
                     magn_input = np.concatenate((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
 
-                    softmax_output = self.fusion_model([phase_input, magn_input])
+                    softmax_output = self.fusion_model([phase_input, magn_input], training=False)
 
                     mean_loss = tf.reduce_mean(self.loss_fn(te_Y, softmax_output))
                     loss = tf.add_n([mean_loss] + self.beamforming_model.losses + self.fusion_model.losses)
