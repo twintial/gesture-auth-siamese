@@ -26,6 +26,112 @@ def get_batch_magnitude(I, Q):
     return magn_diff
 
 
+def cons_phase_model(input_shape):
+    cnn_model = Sequential(name='phase_5_layer_CNN')
+    cnn_model.add(Conv2D(8,
+                         kernel_size=(3, 8),
+                         strides=(1, 1),
+                         input_shape=input_shape,
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_1'))
+    cnn_model.add(BatchNormalization(name='BN_1'))
+    cnn_model.add(ReLU(name='Relu_1'))
+    cnn_model.add(MaxPooling2D(pool_size=(1, 3), strides=(1, 3), padding='same', name='MP_1'))
+
+    cnn_model.add(Conv2D(16,
+                         kernel_size=(3, 8),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_2'))
+    cnn_model.add(BatchNormalization(name='BN_2'))
+    cnn_model.add(ReLU(name='Relu_2'))
+    cnn_model.add(MaxPooling2D(pool_size=(1, 4), strides=(1, 4), padding='same', name='MP_2'))
+
+    cnn_model.add(Conv2D(32,
+                         kernel_size=(3, 5),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_3'))
+    cnn_model.add(BatchNormalization(name='BN_3'))
+    cnn_model.add(ReLU(name='Relu_3'))
+    cnn_model.add(MaxPooling2D(pool_size=(2, 3), strides=(2, 3), padding='same', name='MP_3'))
+
+    cnn_model.add(Conv2D(32,
+                         kernel_size=(3, 3),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_4'))
+    cnn_model.add(BatchNormalization(name='BN_4'))
+    cnn_model.add(ReLU(name='Relu_4'))
+    cnn_model.add(MaxPooling2D(pool_size=(1, 3), strides=(1, 3), padding='same', name='MP_4'))
+
+    cnn_model.add(Conv2D(32,
+                         kernel_size=(3, 3),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_5'))
+    cnn_model.add(BatchNormalization(name='BN_5'))
+    cnn_model.add(ReLU(name='Relu_5'))
+    cnn_model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='same', name='MP_5'))
+
+    cnn_model.add(Flatten(name='Flatten'))
+    cnn_model.add(Dense(128, activation='relu', bias_initializer=initializers.Constant(value=0.1), name='Dense_1'))
+    return cnn_model
+
+
+def cons_magn_model(input_shape):
+    cnn_model = Sequential(name='magn_5_layer_CNN')
+    cnn_model.add(Conv2D(8,
+                         kernel_size=(3, 8),
+                         strides=(1, 1),
+                         input_shape=input_shape,
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_1'))
+    cnn_model.add(BatchNormalization(name='BN_1'))
+    cnn_model.add(ReLU(name='Relu_1'))
+    cnn_model.add(MaxPooling2D(pool_size=(1, 3), strides=(1, 3), padding='same', name='MP_1'))
+
+    cnn_model.add(Conv2D(16,
+                         kernel_size=(3, 8),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_2'))
+    cnn_model.add(BatchNormalization(name='BN_2'))
+    cnn_model.add(ReLU(name='Relu_2'))
+    cnn_model.add(MaxPooling2D(pool_size=(1, 4), strides=(1, 4), padding='same', name='MP_2'))
+
+    cnn_model.add(Conv2D(32,
+                         kernel_size=(3, 5),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_3'))
+    cnn_model.add(BatchNormalization(name='BN_3'))
+    cnn_model.add(ReLU(name='Relu_3'))
+    cnn_model.add(MaxPooling2D(pool_size=(2, 3), strides=(2, 3), padding='same', name='MP_3'))
+
+    cnn_model.add(Conv2D(32,
+                         kernel_size=(3, 3),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_4'))
+    cnn_model.add(BatchNormalization(name='BN_4'))
+    cnn_model.add(ReLU(name='Relu_4'))
+    cnn_model.add(MaxPooling2D(pool_size=(1, 3), strides=(1, 3), padding='same', name='MP_4'))
+
+    cnn_model.add(Conv2D(32,
+                         kernel_size=(3, 3),
+                         strides=(1, 1),
+                         bias_initializer=initializers.Constant(value=0.1),
+                         name='Conv_5'))
+    cnn_model.add(BatchNormalization(name='BN_5'))
+    cnn_model.add(ReLU(name='Relu_5'))
+    cnn_model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='same', name='MP_5'))
+
+    cnn_model.add(Flatten(name='Flatten'))
+    cnn_model.add(Dense(128, activation='relu', bias_initializer=initializers.Constant(value=0.1), name='Dense_1'))
+    return cnn_model
+
+
 class DeepUltraGesture:
     def __init__(self, phase_model: Model, magn_model: Model, n_classes, trained_weight_path=None):
         self.trained_weight_path = trained_weight_path
@@ -35,7 +141,7 @@ class DeepUltraGesture:
         # I & Q
         self.I_Q_input_shape = [(PADDING_LEN, N_CHANNELS * NUM_OF_FREQ), (PADDING_LEN, N_CHANNELS * NUM_OF_FREQ)]
         # phase & magn
-        self.p_m_input_shape = [phase_input_shape, phase_input_shape]
+        self.p_m_input_shape = [(NUM_OF_FREQ * 2, PADDING_LEN-2, 1), (NUM_OF_FREQ * 2, PADDING_LEN-2, 1)]
 
         # layers for neural network beamforming
         self.blstm = layers.Bidirectional(layers.LSTM(256, return_sequences=True))  # 输出长度为512
@@ -64,11 +170,11 @@ class DeepUltraGesture:
         Q_input = layers.Input(shape=Q_input_shape)
         concat_input = layers.concatenate([I_input, Q_input])  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ * 2
         blstm_output = self.blstm(concat_input)  # batch, PADDING_LEN, 512
-        I_outputs = np.zeros(8)
-        Q_outputs = np.zeros(8)
+        I_outputs = []
+        Q_outputs = []
         for i in range(N_CHANNELS):
-            I_outputs[i] = self.I_linears[i](blstm_output)  # batch, PADDING_LEN, NUM_OF_FREQ
-            Q_outputs[i] = self.Q_linears[i](blstm_output)
+            I_outputs.append(self.I_linears[i](blstm_output))  # batch, PADDING_LEN, NUM_OF_FREQ
+            Q_outputs.append(self.Q_linears[i](blstm_output))
         I_mask = layers.concatenate(I_outputs)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ（同一频率连在一起）
         Q_mask = layers.concatenate(Q_outputs)
         model = Model(inputs=[I_input, Q_input], outputs=[I_mask, Q_mask])
@@ -106,7 +212,7 @@ class DeepUltraGesture:
             start_time = time.time()
             for X, Y in train_set:
                 I, Q = X[:, 0], X[:, 1]  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
-                with tf.GradientTape() as tape:
+                with tf.GradientTape(persistent=True) as tape:
                     I_mask, Q_mask = self.beamforming_model([I, Q])  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
                     I_beamform = I * I_mask - Q * Q_mask
                     Q_beamform = I * Q_mask + Q * I_mask
@@ -116,16 +222,33 @@ class DeepUltraGesture:
                     Q_beamform = tf.reduce_sum(Q_beamform, axis=2)  # batch, PADDING_LEN, NUM_OF_FREQ
                     I_beamform = tf.transpose(I_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
                     Q_beamform = tf.transpose(Q_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
+
                     # 求phase和magn
                     phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+
+
+                    # 因为网络关系，暂时加两个diff
+                    phase_diff_2 = np.diff(phase_diff)
+                    phase_input = np.concatenate((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
+
+
                     magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
-                    softmax_output = self.fusion_model([phase_diff, magn_diff])
+
+
+                    # 因为网络关系，暂时加两个diff
+                    magn_diff_2 = np.diff(magn_diff)
+                    magn_input = np.concatenate((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
+
+
+                    softmax_output = self.fusion_model([phase_input, magn_input])
+
                     mean_loss = tf.reduce_mean(self.loss_fn(Y, softmax_output))
                     loss = tf.add_n([mean_loss] + self.beamforming_model.losses + self.fusion_model.losses)
                 # 梯度下降
                 gradients_beam = tape.gradient(loss, self.beamforming_model.trainable_variables)
-                self.optimizer.apply_gradients(zip(gradients_beam, self.beamforming_model.trainable_variables))
                 gradients_fusion = tape.gradient(loss, self.fusion_model.trainable_variables)
+                del tape
+                self.optimizer.apply_gradients(zip(gradients_beam, self.beamforming_model.trainable_variables))
                 self.optimizer.apply_gradients(zip(gradients_fusion, self.fusion_model.trainable_variables))
 
                 acc = self.acc_metric(Y, softmax_output)
@@ -144,10 +267,27 @@ class DeepUltraGesture:
                     Q_beamform = tf.reduce_sum(Q_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
                     I_beamform = tf.transpose(I_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
                     Q_beamform = tf.transpose(Q_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
-                    # 求phase和magn diff
+
+                    # # 求phase和magn diff
+                    # phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+                    # magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
+                    # softmax_output = self.fusion_model([phase_diff, magn_diff], trainable=False)
+
+                    # 求phase和magn
                     phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+
+                    # 因为网络关系，暂时加两个diff
+                    phase_diff_2 = np.diff(phase_diff)
+                    phase_input = np.concatenate((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
+
                     magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
-                    softmax_output = self.fusion_model([phase_diff, magn_diff], trainable=False)
+
+                    # 因为网络关系，暂时加两个diff
+                    magn_diff_2 = np.diff(magn_diff)
+                    magn_input = np.concatenate((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
+
+                    softmax_output = self.fusion_model([phase_input, magn_input])
+
                     mean_loss = tf.reduce_mean(self.loss_fn(te_Y, softmax_output))
                     loss = tf.add_n([mean_loss] + self.beamforming_model.losses + self.fusion_model.losses)
                     acc = self.acc_metric(te_Y, softmax_output)

@@ -44,8 +44,8 @@ class DataLoader:
 
 if __name__ == '__main__':
     # test_demo
-    loader = DataLoader([r'D:\实验数据\2021\毕设\micarrayspeaker\random_split\train.tfrecord'],
-                        [r'D:\实验数据\2021\毕设\micarrayspeaker\random_split\test.tfrecord'], 32)
+    loader = DataLoader([r'D:\实验数据\2021\neuralbeamform\dataset1\random_split\train.tfrecord'],
+                        [r'D:\实验数据\2021\neuralbeamform\dataset1\random_split\test.tfrecord'], 32)
     t = loader.get_train_set()
     for d in t:
         print(d)
