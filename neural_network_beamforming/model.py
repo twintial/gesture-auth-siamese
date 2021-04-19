@@ -10,6 +10,22 @@ from config import *
 from train_log_formatter import print_status_bar_ver0
 
 
+def get_batch_phase_diff(I, Q):
+    signal = I + 1j * Q
+    angle = np.angle(signal)
+    unwrap_angle = np.unwrap(angle)
+    unwrap_angle_diff = np.diff(unwrap_angle)
+    return unwrap_angle_diff
+
+
+def get_batch_magnitude(I, Q):
+    signal = I + 1j * Q
+    magn = np.abs(signal)
+    magn = 10 * np.log10(magn)
+    magn_diff = np.diff(magn)
+    return magn_diff
+
+
 class DeepUltraGesture:
     def __init__(self, phase_model: Model, magn_model: Model, n_classes, trained_weight_path=None):
         self.trained_weight_path = trained_weight_path
@@ -34,12 +50,17 @@ class DeepUltraGesture:
         self.f_embedding_dropout = layers.Dropout(0.5)
         self.f_embedding_softmax = layers.Dense(n_classes, activation=activations.get('softmax'))
 
+        # loss & optimizer & metrix
+        self.loss_fn = losses.sparse_categorical_crossentropy
+        self.optimizer = optimizers.Adam()
+        self.acc_metric = metrics.sparse_categorical_accuracy
+
         self.beamforming_model = self._construct_beamforming_architecture()
         self.fusion_model = self._construct_fusion_architecture()
 
     def _construct_beamforming_architecture(self):
         I_input_shape, Q_input_shape = self.I_Q_input_shape
-        I_input = layers.Input(shape=I_input_shape)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
+        I_input = layers.Input(shape=I_input_shape)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ（同一频率连在一起）
         Q_input = layers.Input(shape=Q_input_shape)
         concat_input = layers.concatenate([I_input, Q_input])  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ * 2
         blstm_output = self.blstm(concat_input)  # batch, PADDING_LEN, 512
@@ -48,7 +69,7 @@ class DeepUltraGesture:
         for i in range(N_CHANNELS):
             I_outputs[i] = self.I_linears[i](blstm_output)  # batch, PADDING_LEN, NUM_OF_FREQ
             Q_outputs[i] = self.Q_linears[i](blstm_output)
-        I_mask = layers.concatenate(I_outputs)
+        I_mask = layers.concatenate(I_outputs)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ（同一频率连在一起）
         Q_mask = layers.concatenate(Q_outputs)
         model = Model(inputs=[I_input, Q_input], outputs=[I_mask, Q_mask])
         return model
@@ -85,13 +106,55 @@ class DeepUltraGesture:
             start_time = time.time()
             for X, Y in train_set:
                 I, Q = X[:, 0], X[:, 1]  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
-                I_mask, Q_mask = self.beamforming_model([I, Q])  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
-                I_beamform = I * I_mask - Q * Q_mask
-                Q_beamform = I * Q_mask + Q * I_mask
-                I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
-                Q_beamform = tf.reshape(Q_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
-                I_beamform = tf.reduce_sum(I_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
-                Q_beamform = tf.reduce_sum(Q_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
+                with tf.GradientTape() as tape:
+                    I_mask, Q_mask = self.beamforming_model([I, Q])  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
+                    I_beamform = I * I_mask - Q * Q_mask
+                    Q_beamform = I * Q_mask + Q * I_mask
+                    I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, N_CHANNELS, NUM_OF_FREQ))
+                    Q_beamform = tf.reshape(Q_beamform, (-1, PADDING_LEN, N_CHANNELS, NUM_OF_FREQ))
+                    I_beamform = tf.reduce_sum(I_beamform, axis=2)  # batch, PADDING_LEN, NUM_OF_FREQ
+                    Q_beamform = tf.reduce_sum(Q_beamform, axis=2)  # batch, PADDING_LEN, NUM_OF_FREQ
+                    I_beamform = tf.transpose(I_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
+                    Q_beamform = tf.transpose(Q_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
+                    # 求phase和magn
+                    phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+                    magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
+                    softmax_output = self.fusion_model([phase_diff, magn_diff])
+                    mean_loss = tf.reduce_mean(self.loss_fn(Y, softmax_output))
+                    loss = tf.add_n([mean_loss] + self.beamforming_model.losses + self.fusion_model.losses)
+                # 梯度下降
+                gradients_beam = tape.gradient(loss, self.beamforming_model.trainable_variables)
+                self.optimizer.apply_gradients(zip(gradients_beam, self.beamforming_model.trainable_variables))
+                gradients_fusion = tape.gradient(loss, self.fusion_model.trainable_variables)
+                self.optimizer.apply_gradients(zip(gradients_fusion, self.fusion_model.trainable_variables))
+
+                acc = self.acc_metric(Y, softmax_output)
+                mean_train_loss(loss)
+                mean_train_acc(acc)
+            if test_set is not None:
+                for te_X, te_Y in test_set:
+                    I, Q = te_X[:, 0], te_X[:, 1]
+                    I_mask, Q_mask = self.beamforming_model([I, Q],
+                                                            trainable=False)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
+                    I_beamform = I * I_mask - Q * Q_mask
+                    Q_beamform = I * Q_mask + Q * I_mask
+                    I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
+                    Q_beamform = tf.reshape(Q_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
+                    I_beamform = tf.reduce_sum(I_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
+                    Q_beamform = tf.reduce_sum(Q_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
+                    I_beamform = tf.transpose(I_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
+                    Q_beamform = tf.transpose(Q_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
+                    # 求phase和magn diff
+                    phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+                    magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
+                    softmax_output = self.fusion_model([phase_diff, magn_diff], trainable=False)
+                    mean_loss = tf.reduce_mean(self.loss_fn(te_Y, softmax_output))
+                    loss = tf.add_n([mean_loss] + self.beamforming_model.losses + self.fusion_model.losses)
+                    acc = self.acc_metric(te_Y, softmax_output)
+                    mean_test_loss(loss)
+                    mean_test_acc(acc)
+                if mean_test_acc.result() >= best_test_acc:
+                    best_test_acc = mean_test_acc.result()
 
             end_time = time.time()
             print_status_bar_ver0(end_time - start_time,

@@ -3,6 +3,7 @@ from scipy.signal import butter, filtfilt
 
 from config import *
 from siamese_cons_loss.preprocess.util import load_audio_data
+from siamese_cons_loss.preprocess.wav_to_phase_magn_list import zero_padding_or_clip
 
 
 def butter_bandpass_filter(data, lowcut, highcut, fs=48e3, order=5):
@@ -56,7 +57,7 @@ def padding_or_clip(array: np.ndarray, target_len):
     elif delta_len < 0:
         left_zero_padding_len = abs(delta_len) // 2
         right_zero_padding_len = abs(delta_len) - left_zero_padding_len
-        return np.pad(array, ((0, 0), (left_zero_padding_len, right_zero_padding_len)))
+        return np.pad(array, ((0, 0), (left_zero_padding_len, right_zero_padding_len)), mode='edge')
 
 
 # main function
@@ -69,8 +70,8 @@ def convert_wavfile_to_IQ(filename):
     assert fs == FS
     data = data.T[:-1, int(fs * DELAY_TIME):]
     # 开始处理数据
-    unwrapped_phase_diff_list = []
-    magnitude_diff_list = []
+    I_list = []
+    Q_list = []
     for i in range(NUM_OF_FREQ):
         fc = F0 + i * STEP
         data_filter = butter_bandpass_filter(data, fc - 150.0, fc + 150.0, fs)
@@ -78,28 +79,29 @@ def convert_wavfile_to_IQ(filename):
         # 滤波+下采样
         I = move_average_overlap_filter(I_raw[:, I_Q_skip:-I_Q_skip])
         Q = move_average_overlap_filter(Q_raw[:, I_Q_skip:-I_Q_skip])
+        # padding
+        I_padded = padding_or_clip(I, PADDING_LEN)
+        Q_padded = padding_or_clip(Q, PADDING_LEN)
+        I_list.append(I_padded)
+        Q_list.append(Q_padded)
+        #
+        #
+        # unwrapped_phase = get_phase(I, Q)
+        # unwrapped_phase_diff = np.diff(unwrapped_phase)
+        # magnitude = get_magnitude(I, Q)
+        # magnitude_diff = np.diff(magnitude)
+        # # padding，是不是可以放到外面做
+        # unwrapped_phase_diff_padded = zero_padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
+        # magnitude_diff_padded = zero_padding_or_clip(magnitude_diff, PADDING_LEN)
+    # transpose是为了让同一个频率的数据连在一起
+    return np.array(I_list).transpose((1, 0, 2)).reshape(data_shape).T, \
+           np.array(Q_list).transpose((1, 0, 2)).reshape(data_shape).T
 
-        # 暂时不做平滑
 
-        unwrapped_phase = get_phase(I, Q)
-        unwrapped_phase_diff = np.diff(unwrapped_phase)
-        magnitude = get_magnitude(I, Q)
-        magnitude_diff = np.diff(magnitude)
-        # padding，是不是可以放到外面做
-        unwrapped_phase_diff_padded = padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
-        magnitude_diff_padded = padding_or_clip(magnitude_diff, PADDING_LEN)
-
-        # plt.figure()
-        # plt.plot(unwrapped_phase_diff[0])
-        # plt.figure()
-        # plt.plot(unwrapped_phase_diff_padded[0])
-        # plt.figure()
-        # plt.plot(magnitude_diff[0])
-        # plt.figure()
-        # plt.plot(magnitude_diff_padded[0])
-        # plt.show()
-
-        unwrapped_phase_diff_list.append(unwrapped_phase_diff_padded)
-        magnitude_diff_list.append(magnitude_diff_padded)
-
-    return np.array(unwrapped_phase_diff_list).reshape(data_shape), np.array(magnitude_diff_list).reshape(data_shape)
+if __name__ == '__main__':
+    a = []
+    a.append([[1, 2, 3, 3], [4, 5, 6, 6]])
+    a.append([[7, 8, 9, 9], [10, 11, 12, 12]])
+    a = np.array(a)
+    a = a.transpose((1, 0, 2))
+    print(a.reshape((2 * 2, 4)))

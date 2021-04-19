@@ -46,7 +46,7 @@ def get_magnitude(I: np.ndarray, Q: np.ndarray) -> np.ndarray:
     return magn
 
 
-def padding_or_clip(array: np.ndarray, target_len):
+def zero_padding_or_clip(array: np.ndarray, target_len):
     array_len = array.shape[1]
     delta_len = array_len - target_len
     if delta_len > 0:
@@ -86,8 +86,8 @@ def convert_wavfile_to_phase_and_magnitude(filename):
         magnitude = get_magnitude(I, Q)
         magnitude_diff = np.diff(magnitude)
         # padding，是不是可以放到外面做
-        unwrapped_phase_diff_padded = padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
-        magnitude_diff_padded = padding_or_clip(magnitude_diff, PADDING_LEN)
+        unwrapped_phase_diff_padded = zero_padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
+        magnitude_diff_padded = zero_padding_or_clip(magnitude_diff, PADDING_LEN)
 
         # plt.figure()
         # plt.plot(unwrapped_phase_diff[0])
@@ -117,9 +117,11 @@ if __name__ == '__main__':
     x.append(b)
     # a = np.array(a)
     c = np.array(x).reshape(2, 2 * 2, 4)
+    a = np.array(a)
+    print(a.reshape(2*2,4))
     # print(a)
     # print(c)
 
     a2 = np.array([[1, 2, 3, 3], [4, 5, 6, 6],[7, 8, 9, 9], [10, 11, 12, 12],[7, 8, 9, 9], [10, 11, 12, 12]]).T
     print(a2)
-    print(a2.reshape(4, 2, 3).sum(2))
+    print(a2.reshape(4, 3, 2).sum(1))

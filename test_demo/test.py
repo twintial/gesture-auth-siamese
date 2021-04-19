@@ -14,23 +14,26 @@ pass
 # for item in dataset:
 #      print(item)
 
-# size = 3
-# a = np.array([[t, 2, 3, 4, 5, 6], [3, 4, 5, 6, 7, 8]])
-# a_l = a.shape[t]
-# delta_len = size - a_l
-#
-# left_clip_len = abs(delta_len) // 2
-# right_clip_len = abs(delta_len) - left_clip_len
-# print(a[:, left_clip_len:-right_clip_len])
+size = 3
+a = np.array([[1, 2, 3, 4, 5, 6], [3, 4, 5, 6, 7, 8]])
+a_l = a.shape[1]
+delta_len = size - a_l
 
-#
-# left_zero_padding_len = abs(delta_len) // 2
-# right_zero_padding_len = abs(delta_len) - left_zero_padding_len
-# print(np.pad(a, ((0, 0), (left_zero_padding_len, right_zero_padding_len))))
+left_clip_len = abs(delta_len) // 2
+right_clip_len = abs(delta_len) - left_clip_len
+print(a[:, left_clip_len:-right_clip_len])
+
+
+left_zero_padding_len = abs(delta_len) // 2
+right_zero_padding_len = abs(delta_len) - left_zero_padding_len
+print(np.pad(a, ((0, 0), (left_zero_padding_len, right_zero_padding_len)), mode='edge'))
 pass
-import tensorflow as tf
-a = tf.constant([1,2,3,4])
-b = tf.reshape(a, (2,2))
-print(b)
-print(tf.reduce_sum(b, axis=1))
+# import tensorflow as tf
+# a = tf.constant([1,2,3,4,5,6,7,8])
+# a = a.numpy()
+# c = a+1j*a
+# print(c)
+# b = tf.reshape(a, (2,2,2))
+# print(b)
+# print(tf.transpose(b, (0,2,1)))
 
