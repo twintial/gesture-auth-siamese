@@ -60,7 +60,7 @@ def padding_or_clip(array: np.ndarray, target_len):
 
 
 # main function
-def convert_wavfile_to_phase_and_magnitude(filename):
+def convert_wavfile_to_IQ(filename):
     # # 这个可能耗时有点长
     # audio_binary = tf.io.read_file(filename)
     # data, fs = tf.audio.decode_wav(audio_binary)  # 会变成-t，t
@@ -103,17 +103,3 @@ def convert_wavfile_to_phase_and_magnitude(filename):
         magnitude_diff_list.append(magnitude_diff_padded)
 
     return np.array(unwrapped_phase_diff_list).reshape(data_shape), np.array(magnitude_diff_list).reshape(data_shape)
-
-
-if __name__ == '__main__':
-    x = []
-    a = []
-    a.append([[1, 2, 3, 3], [4, 5, 6, 6]])
-    a.append([[7, 8, 9, 9], [10, 11, 12, 12]])
-    b = []
-    b.append([[1, 2, 3, 3], [4, 5, 6, 6]])
-    b.append([[7, 8, 9, 9], [10, 11, 12, 12]])
-    x.append(a)
-    x.append(b)
-    c = np.array(x).reshape(2,4,4)
-    print(c.reshape(2*2,2*4,1))
