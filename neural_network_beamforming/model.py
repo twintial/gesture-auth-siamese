@@ -84,7 +84,15 @@ class DeepUltraGesture:
             print("Epoch {}/{}".format(epoch + 1, epochs))
             start_time = time.time()
             for X, Y in train_set:
-                pass
+                I, Q = X[:, 0], X[:, 1]  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
+                I_mask, Q_mask = self.beamforming_model([I, Q])  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
+                I_beamform = I * I_mask - Q * Q_mask
+                Q_beamform = I * Q_mask + Q * I_mask
+                I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
+                Q_beamform = tf.reshape(Q_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
+                I_beamform = tf.reduce_sum(I_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
+                Q_beamform = tf.reduce_sum(Q_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
+
             end_time = time.time()
             print_status_bar_ver0(end_time - start_time,
                                   mean_train_loss, mean_train_acc, mean_test_loss, mean_test_acc,

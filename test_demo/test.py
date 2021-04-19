@@ -27,4 +27,10 @@ pass
 # left_zero_padding_len = abs(delta_len) // 2
 # right_zero_padding_len = abs(delta_len) - left_zero_padding_len
 # print(np.pad(a, ((0, 0), (left_zero_padding_len, right_zero_padding_len))))
+pass
+import tensorflow as tf
+a = tf.constant([1,2,3,4])
+b = tf.reshape(a, (2,2))
+print(b)
+print(tf.reduce_sum(b, axis=1))
 

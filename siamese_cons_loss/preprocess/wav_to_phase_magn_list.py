@@ -115,5 +115,11 @@ if __name__ == '__main__':
     b.append([[7, 8, 9, 9], [10, 11, 12, 12]])
     x.append(a)
     x.append(b)
-    c = np.array(x).reshape(2,4,4)
-    print(c.reshape(2*2,2*4,1))
+    # a = np.array(a)
+    c = np.array(x).reshape(2, 2 * 2, 4)
+    # print(a)
+    # print(c)
+
+    a2 = np.array([[1, 2, 3, 3], [4, 5, 6, 6],[7, 8, 9, 9], [10, 11, 12, 12],[7, 8, 9, 9], [10, 11, 12, 12]]).T
+    print(a2)
+    print(a2.reshape(4, 2, 3).sum(2))
