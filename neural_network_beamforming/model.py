@@ -254,9 +254,6 @@ class DeepUltraGesture:
                     magn_diff_2 = tf_diff(magn_diff)
                     magn_input = tf.concat((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
 
-                    # tape.watch(phase_input)
-                    # tape.watch(magn_diff)
-
                     softmax_output = self.fusion_model([phase_input, magn_input])
 
                     mean_loss = tf.reduce_mean(self.loss_fn(Y, softmax_output))
@@ -278,10 +275,10 @@ class DeepUltraGesture:
                                                             training=False)  # batch, PADDING_LEN, N_CHANNELS * NUM_OF_FREQ
                     I_beamform = I * I_mask - Q * Q_mask
                     Q_beamform = I * Q_mask + Q * I_mask
-                    I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
-                    Q_beamform = tf.reshape(Q_beamform, (-1, PADDING_LEN, NUM_OF_FREQ, N_CHANNELS))
-                    I_beamform = tf.reduce_sum(I_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
-                    Q_beamform = tf.reduce_sum(Q_beamform, axis=-1)  # batch, PADDING_LEN, NUM_OF_FREQ
+                    I_beamform = tf.reshape(I_beamform, (-1, PADDING_LEN, N_CHANNELS, NUM_OF_FREQ))
+                    Q_beamform = tf.reshape(Q_beamform, (-1, PADDING_LEN, N_CHANNELS, NUM_OF_FREQ))
+                    I_beamform = tf.reduce_sum(I_beamform, axis=2)  # batch, PADDING_LEN, NUM_OF_FREQ
+                    Q_beamform = tf.reduce_sum(Q_beamform, axis=2)  # batch, PADDING_LEN, NUM_OF_FREQ
                     I_beamform = tf.transpose(I_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
                     Q_beamform = tf.transpose(Q_beamform, (0, 2, 1))  # batch, NUM_OF_FREQ, PADDING_LEN
 
@@ -290,18 +287,29 @@ class DeepUltraGesture:
                     # magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
                     # softmax_output = self.fusion_model([phase_diff, magn_diff], trainable=False)
 
+                    # # 求phase和magn
+                    # phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+                    # # 因为网络关系，暂时加两个diff
+                    # phase_diff_2 = np.diff(phase_diff)
+                    # phase_input = np.concatenate((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
+                    # magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
+                    # # 因为网络关系，暂时加两个diff
+                    # magn_diff_2 = np.diff(magn_diff)
+                    # magn_input = np.concatenate((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
+
+
                     # 求phase和magn
-                    phase_diff = get_batch_phase_diff(I_beamform.numpy(), Q_beamform.numpy())
+                    phase_diff = get_batch_phase_diff_tf(I_beamform, Q_beamform)
 
                     # 因为网络关系，暂时加两个diff
-                    phase_diff_2 = np.diff(phase_diff)
-                    phase_input = np.concatenate((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
+                    phase_diff_2 = tf_diff(phase_diff)
+                    phase_input = tf.concat((phase_diff[:, :, :-1], phase_diff_2), axis=-2)
 
-                    magn_diff = get_batch_magnitude(I_beamform.numpy(), Q_beamform.numpy())
+                    magn_diff = get_batch_magnitude_tf(I_beamform, Q_beamform)
 
                     # 因为网络关系，暂时加两个diff
-                    magn_diff_2 = np.diff(magn_diff)
-                    magn_input = np.concatenate((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
+                    magn_diff_2 = tf_diff(magn_diff)
+                    magn_input = tf.concat((magn_diff[:, :, :-1], magn_diff_2), axis=-2)
 
                     softmax_output = self.fusion_model([phase_input, magn_input], training=False)
 
