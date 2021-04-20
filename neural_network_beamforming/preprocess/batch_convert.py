@@ -34,4 +34,4 @@ if __name__ == '__main__':
     # test_demo
     # convert(r'D:\实验数据\2021\siamese\test', r'D:\实验数据\2021\siamese\test_npz')
     # convert(r'D:\实验数据\2021\毕设\micarrayspeaker\raw', r'D:\实验数据\2021\毕设\micarrayspeaker\npz')
-    convert(r'D:\实验数据\2021\neuralbeamform\dataset1\raw', r'D:\实验数据\2021\neuralbeamform\dataset1\npz')
+    convert(r'D:\实验数据\2021\neuralbeamform\audataset\raw', r'D:\实验数据\2021\neuralbeamform\audataset\npz')
