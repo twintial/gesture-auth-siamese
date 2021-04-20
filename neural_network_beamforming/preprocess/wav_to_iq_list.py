@@ -103,5 +103,7 @@ if __name__ == '__main__':
     a.append([[1, 2, 3, 3], [4, 5, 6, 6]])
     a.append([[7, 8, 9, 9], [10, 11, 12, 12]])
     a = np.array(a)
+    print(a)
     a = a.transpose((1, 0, 2))
+    print(a)
     print(a.reshape((2 * 2, 4)))
