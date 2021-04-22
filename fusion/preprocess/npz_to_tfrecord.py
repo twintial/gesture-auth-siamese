@@ -101,7 +101,7 @@ class NpzDataSplitor:
 
 if __name__ == '__main__':
     splitor = NpzDataSplitor(10)
-    splitor.random_split_of_per_user(r'D:\实验数据\2021\毕设\micarrayspeaker\dataset2\npz',
-                                     r'D:\实验数据\2021\毕设\micarrayspeaker\dataset2\random_split',
+    splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\毕设\micarrayspeaker\audataset\npz',
+                                     r'D:\实验数据\2021\毕设\micarrayspeaker\audataset\span_times_split',
                                      'train.tfrecord',
                                      'test.tfrecord')

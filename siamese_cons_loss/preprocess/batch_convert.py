@@ -33,4 +33,4 @@ if __name__ == '__main__':
     # convert(r'D:\实验数据\2021\siamese\train', r'D:\实验数据\2021\siamese\train_npz')
     # test_demo
     # convert(r'D:\实验数据\2021\siamese\test', r'D:\实验数据\2021\siamese\test_npz')
-    convert(r'D:\实验数据\2021\毕设\micarrayspeaker\raw', r'D:\实验数据\2021\毕设\micarrayspeaker\npz')
+    convert(r'D:\实验数据\2021\毕设\micarrayspeaker\dataset1\raw', r'D:\实验数据\2021\毕设\micarrayspeaker\audataset\npz')
