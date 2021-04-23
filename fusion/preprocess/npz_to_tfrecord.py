@@ -89,8 +89,9 @@ class NpzDataSplitor:
         # 划分
         for v in self.user_gesture_dict.values():
             for gesture_path in v:
-                if ('gesture5' in gesture_path[0]) or ('gesture6' in gesture_path[0]):
+                if ('zq' in gesture_path[0]) or ('gesture6' in gesture_path[0]):
                     test_set.append(gesture_path)
+                    # pass
                 else:
                     train_set.append(gesture_path)
         self.npz2tfrecord(target_path, train_tfrecord, train_set)
@@ -98,10 +99,23 @@ class NpzDataSplitor:
         self.npz2tfrecord(target_path, test_tfrecord, test_set)
         log.logger.info('test set convert finish')
 
+    def not_split(self, npz_path, target_path, test_tfrecord):
+        os.makedirs(target_path)
+        test_set = []
+        if self.user_gesture_dict is None:
+            self._create_filename_label_tuples(npz_path)
+        # 划分
+        for v in self.user_gesture_dict.values():
+            np.random.shuffle(v)
+            test_set += v
+        self.npz2tfrecord(target_path, test_tfrecord, test_set)
+        log.logger.info('test set convert finish')
+
 
 if __name__ == '__main__':
-    splitor = NpzDataSplitor(10)
-    splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\毕设\micarrayspeaker\audataset\npz',
-                                     r'D:\实验数据\2021\毕设\micarrayspeaker\audataset\span_times_split',
+    splitor = NpzDataSplitor(countinue_same_gesture_num=10)
+    splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\newgesture\npz',
+                                     r'D:\实验数据\2021\newgesture\span_person_data\span_times_split',
                                      'train.tfrecord',
                                      'test.tfrecord')
+    # splitor.not_split(r'D:\实验数据\2021\newposition\npz', r'D:\实验数据\2021\newposition\not_split', 'test.tfrecord')

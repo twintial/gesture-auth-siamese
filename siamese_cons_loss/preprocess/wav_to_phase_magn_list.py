@@ -89,6 +89,14 @@ def convert_wavfile_to_phase_and_magnitude(filename):
         unwrapped_phase_diff_padded = zero_padding_or_clip(unwrapped_phase_diff, PADDING_LEN)
         magnitude_diff_padded = zero_padding_or_clip(magnitude_diff, PADDING_LEN)
 
+        # import matplotlib.pyplot as plt
+        # plt.figure()
+        # for j in range(7):
+        #     plt.subplot(4, 2, j + 1)
+        #     plt.plot(unwrapped_phase[j])
+        # plt.get_current_fig_manager().window.showMaximized()
+        # plt.show()
+
         # plt.figure()
         # plt.plot(unwrapped_phase_diff[0])
         # plt.figure()

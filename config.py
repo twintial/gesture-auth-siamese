@@ -1,11 +1,22 @@
 CHUNK = 2048  # audio frame length
 FS = 48000  # sample rate
-STEP = 350.0  # 每个频率的跨度
 NUM_OF_FREQ = 8  # 频率数量
 DELAY_TIME = 1  # 麦克风的延迟时间
 STD_THRESHOLD = 0.022  # 相位标准差阈值,没用
 N_CHANNELS = 7  # 声道数
+
+'''
+这两个会修改。
+第一次用的是:
 F0 = 17000.0
+STEP = 350.0
+第二次用的是:
+F0 = 17350.0
+STEP = 700.0
+'''
+F0 = 17350.0
+STEP = 700.0  # 每个频率的跨度
+
 
 I_Q_skip = 1000
 

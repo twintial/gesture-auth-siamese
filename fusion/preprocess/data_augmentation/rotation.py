@@ -129,4 +129,4 @@ def rotation_augmentation(raw_audio_dir, target_npz_dir):
                         
 
 if __name__ == '__main__':
-    rotation_augmentation(r'D:\实验数据\2021\毕设\micarrayspeaker\dataset1\raw', r'D:\实验数据\2021\毕设\micarrayspeaker\audataset\npz')
+    rotation_augmentation(r'D:\实验数据\2021\newgesture\raw', r'D:\实验数据\2021\newgesture\npz')
