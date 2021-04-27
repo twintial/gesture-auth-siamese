@@ -9,8 +9,10 @@ from fusion.fusion_model import cons_phase_model, FusionModel, cons_magn_model
 
 def main():
     train_file = [r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture1',
-                  r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture2']
-    test_file = [r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture4']
+                  r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture2',
+                  r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture3',
+                  r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture4']
+    test_file = [r'D:\实验数据\2021\newgesture\tfrecord\cd\gesture1']
     phase_model = cons_phase_model(phase_input_shape)
     magn_model = cons_magn_model(phase_input_shape)
     fusion_model = FusionModel(phase_model, magn_model, 10)

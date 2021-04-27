@@ -126,7 +126,11 @@ class NpzDataSplitor:
         # pool = ThreadPoolExecutor(max_workers=4)
         user_dirs = os.listdir(npz_path)
         for user_dir in user_dirs:
-            os.makedirs(os.path.join(target_path, user_dir))
+            try:
+                os.makedirs(os.path.join(target_path, user_dir), exist_ok=False)
+            except FileExistsError:
+                log.logger.warning(f'{os.path.join(target_path, user_dir)} exists, fail to create')
+                continue
             gesture_dirs = os.listdir(os.path.join(npz_path, user_dir))
             for gesture_dir in gesture_dirs:
                 filename_label_tuples = []
