@@ -109,6 +109,8 @@ def rotation_augmentation(raw_audio_dir, target_npz_dir):
     # 好像有点问题
     pool = ThreadPoolExecutor(max_workers=4)
     for user_dir in user_dirs:
+        # if ('sjj') in user_dir:
+        #     continue
         gesture_dirs = os.listdir(os.path.join(raw_audio_dir, user_dir))
         for gesture_dir in gesture_dirs:
             abs_gesture_dir = os.path.join(raw_audio_dir, user_dir, gesture_dir)

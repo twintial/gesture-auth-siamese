@@ -1,9 +1,10 @@
 import time
 
-from tensorflow.keras import initializers, layers, activations, Model, optimizers, losses, metrics
+from tensorflow.keras import initializers, layers, activations, Model, optimizers, losses, metrics, utils
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, ReLU, Dropout
 from tensorflow.keras.models import Sequential
 
+from am_softmax.amsoftmax import CosFace
 from config import phase_input_shape
 from train_log_formatter import print_status_bar_ver0
 
@@ -114,7 +115,7 @@ def cons_magn_model(input_shape):
     return cnn_model
 
 
-class FusionModel:
+class FusionModelWithAM:
     def __init__(self, phase_model: Model, magn_model: Model, n_classes, trained_weight_path=None):
         self.trained_weight_path = trained_weight_path
 
@@ -125,8 +126,8 @@ class FusionModel:
         # layers for fusion embedding
         self.f_embedding_fatten = layers.Flatten()
         self.f_embedding_dropout = layers.Dropout(0.5)
-        # self.f_embedding_dense = layers.Dense(128, activation='relu', bias_initializer=initializers.Constant(value=0.1), name='embedding_dense')
-        self.f_embedding_softmax = layers.Dense(n_classes, activation=activations.get('softmax'))
+        self.f_embedding_dense = layers.Dense(128, activation='relu' , name='embedding_dense')
+        # self.f_embedding_dense = layers.Dense(n_classes, activation=activations.get('softmax'))
 
         self.model = self._construct_fusion_architecture()
         self._compile_siamese_model()
@@ -134,6 +135,7 @@ class FusionModel:
     def _construct_fusion_architecture(self):
         phase_input_shape, magn_input_shape = self.input_shape
 
+        one_hot_input = layers.Input(shape=(10, ))
         phase_input = layers.Input(shape=phase_input_shape)
         phase_embedding = self.phase_model(phase_input)
         magn_input = layers.Input(shape=magn_input_shape)
@@ -142,9 +144,10 @@ class FusionModel:
         fusion_embedding = layers.concatenate([phase_embedding, magn_embedding])
         flattened_fe = self.f_embedding_fatten(fusion_embedding)
         dropout_fe = self.f_embedding_dropout(flattened_fe)
-        output = self.f_embedding_softmax(dropout_fe)
 
-        model = Model(inputs=[phase_input, magn_input], outputs=[output])
+        output = CosFace(10)((self.f_embedding_dense(flattened_fe), one_hot_input))
+
+        model = Model(inputs=[phase_input, magn_input, one_hot_input], outputs=[output])
         return model
 
     def _compile_siamese_model(self):
@@ -169,12 +172,12 @@ class FusionModel:
             print("Epoch {}/{}".format(epoch + 1, epochs))
             start_time = time.time()
             for X, Y in train_set:
-                loss, acc = self.model.train_on_batch([X[:, 0], X[:, 1]], Y)
+                loss, acc = self.model.train_on_batch([X[:, 0], X[:, 1], utils.to_categorical(Y, num_classes=10)], Y)
                 mean_train_loss(loss)
                 mean_train_acc(acc)
             if test_set is not None:
                 for te_X, te_Y in test_set:
-                    loss, acc = self.model.evaluate([te_X[:, 0], te_X[:, 1]], te_Y, verbose=0)
+                    loss, acc = self.model.evaluate([te_X[:, 0], te_X[:, 1], utils.to_categorical(te_Y, num_classes=10)], te_Y, verbose=0)
                     mean_test_loss(loss)
                     mean_test_acc(acc)
                 if mean_test_acc.result() >= best_test_acc:

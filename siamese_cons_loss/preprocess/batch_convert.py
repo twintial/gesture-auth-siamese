@@ -24,7 +24,11 @@ def convert(raw_audio_dir, target_npz_dir):
             abs_gesture_dir = os.path.join(raw_audio_dir, user_dir, gesture_dir)
             audio_files = os.listdir(abs_gesture_dir)
             save_dir = os.path.join(target_npz_dir, user_dir, gesture_dir)
-            os.makedirs(save_dir, exist_ok=False)
+            try:
+                os.makedirs(save_dir, exist_ok=False)
+            except FileExistsError:
+                log.logger.warning(f'{save_dir} exists, fail to create')
+                continue
             for audio_file in audio_files:
                 m = re.match(r'(\d*)\.wav', audio_file)
                 if m:

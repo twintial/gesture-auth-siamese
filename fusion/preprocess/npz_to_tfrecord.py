@@ -3,6 +3,8 @@
 """
 import os
 import re
+from concurrent.futures.thread import ThreadPoolExecutor
+
 import log
 import numpy as np
 import tensorflow as tf
@@ -23,6 +25,7 @@ class NpzDataSplitor:
 
     @staticmethod
     def npz2tfrecord(target_path, tfrecord_file_name, data_set):
+        # assert len(data_set) == 100
         with tf.io.TFRecordWriter(os.path.join(target_path, tfrecord_file_name)) as f:
             for train_sample in data_set:
                 sample_path = train_sample[0]
@@ -37,8 +40,8 @@ class NpzDataSplitor:
                         }
                     ))
                 f.write(tf_example.SerializeToString())
-        with open(os.path.join(target_path, f'{tfrecord_file_name.split(".")[0]}-description.txt'), 'w') as f:
-            f.write(f'sample number : {len(data_set)}\n')
+        # with open(os.path.join(target_path, f'{tfrecord_file_name.split(".")[0]}-description.txt'), 'w') as f:
+        #     f.write(f'sample number : {len(data_set)}\n')
 
     def _create_filename_label_tuples(self, npz_path):
         self.user_gesture_dict = {}
@@ -55,6 +58,8 @@ class NpzDataSplitor:
                         code = int(m.group(1))
                         label = code // self.csgn
                         abs_filepath = os.path.join(abs_gesture_dir, gesture_filename)
+                        # if 'au' in abs_filepath:
+                        #     continue
                         filename_label_tuples.append([abs_filepath, label])
                     else:
                         log.logger.warning(f'unknown filename format {gesture_filename}')
@@ -89,9 +94,14 @@ class NpzDataSplitor:
         # 划分
         for v in self.user_gesture_dict.values():
             for gesture_path in v:
-                if ('zq' in gesture_path[0]) or ('gesture6' in gesture_path[0]):
+                if ('cd' in gesture_path[0]) or ('gesture6' in gesture_path[0]):
+                    if 'au' in gesture_path[0]:
+                        continue
                     test_set.append(gesture_path)
                     # pass
+                # elif 'au' in gesture_path[0]:
+                #     # 不用增强
+                #     pass
                 else:
                     train_set.append(gesture_path)
         self.npz2tfrecord(target_path, train_tfrecord, train_set)
@@ -111,11 +121,38 @@ class NpzDataSplitor:
         self.npz2tfrecord(target_path, test_tfrecord, test_set)
         log.logger.info('test set convert finish')
 
+    # 比较通用
+    def gesture_dataset2tfrecord(self, npz_path, target_path):
+        # pool = ThreadPoolExecutor(max_workers=4)
+        user_dirs = os.listdir(npz_path)
+        for user_dir in user_dirs:
+            os.makedirs(os.path.join(target_path, user_dir))
+            gesture_dirs = os.listdir(os.path.join(npz_path, user_dir))
+            for gesture_dir in gesture_dirs:
+                filename_label_tuples = []
+                abs_gesture_dir = os.path.join(npz_path, user_dir, gesture_dir)
+                gesture_filenames = os.listdir(abs_gesture_dir)
+                for gesture_filename in gesture_filenames:
+                    m = re.match(r'(\d+).npz', gesture_filename)
+                    if m:
+                        code = int(m.group(1))
+                        label = code // self.csgn
+                        abs_filepath = os.path.join(abs_gesture_dir, gesture_filename)
+                        # if 'au' in abs_filepath:
+                        #     continue
+                        filename_label_tuples.append([abs_filepath, label])
+                    else:
+                        log.logger.warning(f'unknown filename format {gesture_filename}')
+                self.npz2tfrecord(os.path.join(target_path, user_dir), gesture_dir, filename_label_tuples)
+                # 好像没变快？
+                # pool.submit(self.npz2tfrecord, os.path.join(target_path, user_dir), gesture_dir, filename_label_tuples)
+        # pool.shutdown()
 
 if __name__ == '__main__':
     splitor = NpzDataSplitor(countinue_same_gesture_num=10)
-    splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\newgesture\npz',
-                                     r'D:\实验数据\2021\newgesture\span_person_data\span_times_split',
-                                     'train.tfrecord',
-                                     'test.tfrecord')
+    # splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\newgesture\npz',
+    #                                  r'D:\实验数据\2021\newgesture\span_person_data\span_times_split2_au',
+    #                                  'train.tfrecord',
+    #                                  'test.tfrecord')
     # splitor.not_split(r'D:\实验数据\2021\newposition\npz', r'D:\实验数据\2021\newposition\not_split', 'test.tfrecord')
+    splitor.gesture_dataset2tfrecord(r'D:\实验数据\2021\newgesture\npz', r'D:\实验数据\2021\newgesture\tfrecord')
