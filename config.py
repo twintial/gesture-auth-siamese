@@ -23,7 +23,7 @@ I_Q_skip = 1000
 PADDING_LEN = 1400
 
 # 数据集转换线程数
-num_parallel_calls = 2
+num_parallel_calls = 4
 
 # neural network config
 TF_CPP_MIN_LOG_LEVEL = '1'
@@ -31,7 +31,7 @@ data_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN)
 phase_input_shape = (NUM_OF_FREQ * N_CHANNELS, PADDING_LEN, 1)
 BATCH_SIZE = 32
 # 与数据集大小有关，数据集越大这个值越大
-SHUFFLE_BUFF_SIZE = 10000
+SHUFFLE_BUFF_SIZE = 2000
 RANDOM_SEED = 12
 
 # train

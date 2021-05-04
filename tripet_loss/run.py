@@ -13,12 +13,14 @@ def main():
     np.random.seed(10)
     input_shape = phase_input_shape
     cnn_net = cons_cnn_model_gai(input_shape)
-    model = TripLossModel(cnn_net, input_shape, 2, 30, 0.5)
-    data_loader = PhaseDataLoader([r'D:\实验数据\2021\siamese\e1\train_npz'])
+    model = TripLossModel(cnn_net, input_shape, 10, 10, 0.5)
+    # data_loader = PhaseDataLoader([r'D:\实验数据\2021\siamese\e1\train_npz'])
+
+    data_loader = PhaseDataLoader([r'D:\实验数据\2021\siamese\newgesture\npz'])
 
     loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
                              [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], BATCH_SIZE)
-    model.train(data_loader, loader.get_train_set(), steps=10, epochs=50)
+    model.train(data_loader, loader.get_test_set(), steps=10, epochs=50)
 
 
 # 对比损失
@@ -76,6 +78,6 @@ if __name__ == '__main__':
     # print(z)
     # gradients = tape.gradient(z, [w1])
     # print(gradients)
-    # main()
+    main()
     # test_siam()
-    eval_siam()
+    # eval_siam()

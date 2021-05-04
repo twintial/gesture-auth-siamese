@@ -26,6 +26,9 @@ class NpzDataSplitor:
     @staticmethod
     def npz2tfrecord(target_path, tfrecord_file_name, data_set):
         # assert len(data_set) == 100
+        if os.path.exists(os.path.join(target_path, tfrecord_file_name)):
+            log.logger.warning(f'{os.path.join(target_path, tfrecord_file_name)} exists, fail to create')
+            return
         with tf.io.TFRecordWriter(os.path.join(target_path, tfrecord_file_name)) as f:
             for train_sample in data_set:
                 sample_path = train_sample[0]
@@ -126,11 +129,7 @@ class NpzDataSplitor:
         # pool = ThreadPoolExecutor(max_workers=4)
         user_dirs = os.listdir(npz_path)
         for user_dir in user_dirs:
-            try:
-                os.makedirs(os.path.join(target_path, user_dir), exist_ok=False)
-            except FileExistsError:
-                log.logger.warning(f'{os.path.join(target_path, user_dir)} exists, fail to create')
-                continue
+            os.makedirs(os.path.join(target_path, user_dir), exist_ok=True)
             gesture_dirs = os.listdir(os.path.join(npz_path, user_dir))
             for gesture_dir in gesture_dirs:
                 filename_label_tuples = []
@@ -154,9 +153,9 @@ class NpzDataSplitor:
 
 if __name__ == '__main__':
     splitor = NpzDataSplitor(countinue_same_gesture_num=10)
-    # splitor.span_times_split_special_for_100_10(r'D:\实验数据\2021\newgesture\npz',
-    #                                  r'D:\实验数据\2021\newgesture\span_person_data\span_times_split2_au',
-    #                                  'train.tfrecord',
-    #                                  'test.tfrecord')
+    splitor.random_split_of_per_user(r'D:\实验数据\2021\newgesture\npz',
+                                     r'D:\实验数据\2021\newgesture\random_split\10person',
+                                     'train.tfrecord',
+                                     'test.tfrecord')
     # splitor.not_split(r'D:\实验数据\2021\newposition\npz', r'D:\实验数据\2021\newposition\not_split', 'test.tfrecord')
-    splitor.gesture_dataset2tfrecord(r'D:\实验数据\2021\newgesture\npz', r'D:\实验数据\2021\newgesture\tfrecord')
+    # splitor.gesture_dataset2tfrecord(r'D:\实验数据\2021\newgesture\npz', r'D:\实验数据\2021\newgesture\tfrecord')
