@@ -1,10 +1,12 @@
 import os
+
+from fusion_model_improve.data_loader import DataLoader
+from fusion_model_improve.fusion_model import FusionImproveModel
+from fusion_model_improve.models import basic_model
+
 os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 from config import *
-from fusion.data_loader import DataLoader
-from fusion.fusion_model import cons_phase_model, FusionModel, cons_magn_model
-
 
 
 def main():
@@ -16,14 +18,9 @@ def main():
     # test_file = [r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture4',
     #              r'D:\实验数据\2021\newgesture\tfrecord\sjj\gesture3']
     # dataset_loader = DataLoader(train_file, test_file, BATCH_SIZE)
-
-    phase_model = cons_phase_model(phase_input_shape)
-    magn_model = cons_magn_model(phase_input_shape)
-    fusion_model = FusionModel(phase_model, magn_model, 10)
-    # # 构建数据集
-    # dataset_loader = DataLoader([r'D:\实验数据\2021\newgesture\random_split\10person\train.tfrecord'],
-    #                             [r'D:\实验数据\2021\newgesture\random_split\10person\test.tfrecord'],
-    #                             BATCH_SIZE)
+    n_classes = 10
+    model = basic_model(n_classes, phase_input_shape, phase_input_shape)
+    fusion_model = FusionImproveModel(model, n_classes)
     # 构建数据集
     dataset_loader = DataLoader([r'/media/home/shenjj/dataset/newgesture/random_split/10person/train.tfrecord'],
                                 [r'/media/home/shenjj/dataset/newgesture/random_split/10person/test.tfrecord'],
