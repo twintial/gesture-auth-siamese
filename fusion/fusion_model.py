@@ -232,7 +232,7 @@ class FusionModel:
                     best_test_acc = mean_test_acc.result()
                     if weights_path is not None:
                         self.save_weights(weights_path)
-                    if best_test_acc > 0.7:
+                    if best_test_acc > 0.98:
                         plot_confusion_matrix(confusion_mat, target_names=labels, title=str(best_test_acc.numpy()))
             end_time = time.time()
             print_status_bar_ver0(end_time - start_time,

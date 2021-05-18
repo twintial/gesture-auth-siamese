@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 from config import *
 from siamese_cons_loss.cnn import *
 from siamese_cons_loss.phase_pair_loader import PhasePairLoader
@@ -13,13 +16,17 @@ def main():
     np.random.seed(10)
     input_shape = phase_input_shape
     cnn_net = cons_cnn_model_gai(input_shape)
-    model = TripLossModel(cnn_net, input_shape, 10, 10, 0.5)
+    model = TripLossModel(cnn_net, input_shape, 30, 10, 0.5)
     # data_loader = PhaseDataLoader([r'D:\实验数据\2021\siamese\e1\train_npz'])
 
-    data_loader = PhaseDataLoader([r'D:\实验数据\2021\siamese\newgesture\npz'])
+    data_loader = PhaseDataLoader([r'/media/home/shenjj/dataset/siamese/newgesture/npz'])
 
-    loader = PhasePairLoader([r'D:\实验数据\2021\siamese\e1\train_tfrecord\train.tfrecord'],
-                             [r'D:\实验数据\2021\siamese\e1\test_tfrecord\test.tfrecord'], BATCH_SIZE)
+    # loader = PhasePairLoader([r'/home/shenjj/dataset/siamese/train_tfrecord/train.tfrecord'],
+    #                          [r'/home/shenjj/dataset/siamese/test_tfrecord/test.tfrecord'], BATCH_SIZE)
+
+    loader = PhasePairLoader([r'/home/shenjj/dataset/siamese/train_tfrecord/train.tfrecord'],
+                             [r'/media/home/shenjj/dataset/siamese/newgesture/test.tfrecord'], BATCH_SIZE)
+
     model.train(data_loader, loader.get_test_set(), steps=10, epochs=50)
 
 

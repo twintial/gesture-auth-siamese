@@ -17,3 +17,7 @@ def print_status_bar_ver0(time, *metrics, **kwargs):
 def print_status_bar_ver1(time, loss):
     log_str = f'- {time:.0f}s - {loss.name}:{loss.result():.4f}'
     print(log_str)
+
+import numpy as np
+a = [1,2,4]
+np.savetxt('a.txt',a)

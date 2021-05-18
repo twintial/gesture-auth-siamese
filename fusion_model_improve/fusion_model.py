@@ -1,15 +1,12 @@
+import itertools
 import time
 
-from tensorflow.keras import initializers, layers, activations, Model, optimizers, losses, metrics
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, BatchNormalization, ReLU, Dropout
-from tensorflow.keras.models import Sequential
-
-from config import phase_input_shape
-from train_log_formatter import print_status_bar_ver0
-import numpy as np
-from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
-import itertools
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import Model, optimizers, losses, metrics
+
+from train_log_formatter import print_status_bar_ver0
 
 
 def plot_confusion_matrix(cm, target_names, title='Confusion matrix', cmap=plt.cm.Greens, normalize=True):

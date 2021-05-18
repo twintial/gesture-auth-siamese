@@ -64,6 +64,11 @@ class TripLossModel:
         return loss
 
     def train(self, data_loader, val_dataset=None, epochs=1000, steps=100):
+        losses = []
+        best_bACCs = []
+        aucs = []
+        baccs = 0
+
         mean_train_loss = metrics.Mean()
         for epoch in range(epochs):
             # reset states
@@ -111,6 +116,7 @@ class TripLossModel:
                     gradients = tape.gradient(loss, self.model.trainable_variables)
                     self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
                     mean_train_loss(loss)
+                losses.append(loss)
                 # evaluate
             if val_dataset is not None:
                 thresholds = np.arange(0, 4, 0.01)
@@ -143,15 +149,27 @@ class TripLossModel:
                 best_far = fp_test[best_threshold_index]
                 # 计算auc
                 auc = np.sum(((tp_test[:-1] + tp_test[1:]) * np.diff(fp_test)) / 2)
+                aucs.append(auc)
                 # 计算平均acc
                 mean_acc = (tp_test + 1 - fp_test) / 2
                 best_mean_acc = np.max(mean_acc)
+                best_bACCs.append(best_mean_acc)
+
+                if best_mean_acc > baccs:
+                    np.savetxt('data/fpr.txt', fp_test)
+                    np.savetxt('data/tpr.txt', tp_test)
+                    baccs = best_mean_acc
 
                 print(f'- best_threshold: {best_threshold} - best_acc: {best_acc:.4f}'
                       f' - best_val: {best_val:.4f} - best_far: {best_far:.4f} - auc: {auc:.4f} - best_mean_acc: {best_mean_acc:.4f}')
 
+                # 保存
+
             end_time = time.time()
             print_status_bar_ver1(end_time - start_time, mean_train_loss)
+        np.savetxt('data/losses.txt', losses)
+        np.savetxt('data/baccs.txt', best_bACCs)
+        np.savetxt('data/aucs.txt', aucs)
 
     def _select_triplets_idx(self, embeddings, alpha):
         emb_start_idx = 0

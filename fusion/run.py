@@ -1,6 +1,6 @@
 import os
 os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 from config import *
 from fusion.data_loader import DataLoader
 from fusion.fusion_model import cons_phase_model, FusionModel, cons_magn_model
